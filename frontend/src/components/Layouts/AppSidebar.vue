@@ -426,18 +426,25 @@ function toggleHelpModal() {
 // onboarding
 const { user } = sessionStore()
 const { users, isManager } = usersStore()
-const { isOnboardingStepsCompleted, setUp } = useOnboarding('frappecrm')
+const onboarding = useOnboarding('frappecrm') || {
+  isOnboardingStepsCompleted: ref(true),
+  setUp: () => {},
+  stepsCompleted: ref(100),
+  totalSteps: ref(1),
+  completedPercentage: ref(100),
+}
+const { isOnboardingStepsCompleted = ref(true), setUp = () => {} } = onboarding
 
 async function getFirstLead() {
   let firstLead = localStorage.getItem('firstLead' + user)
   if (firstLead) return firstLead
-  return await call('crm.api.onboarding.get_first_lead')
+  return null
 }
 
 async function getFirstDeal() {
   let firstDeal = localStorage.getItem('firstDeal' + user)
   if (firstDeal) return firstDeal
-  return await call('crm.api.onboarding.get_first_deal')
+  return null
 }
 
 const showIntermediateModal = ref(false)
@@ -726,7 +733,7 @@ const articles = ref([
     ],
   },
   {
-    title: __('Frappe CRM mobile'),
+    title: __('Crestara CRM mobile'),
     opened: false,
     subArticles: [
       { name: 'mobile-app-installation', title: __('Mobile App Installation') },

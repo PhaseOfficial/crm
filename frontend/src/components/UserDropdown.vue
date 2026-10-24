@@ -11,7 +11,7 @@
               : 'w-full px-2 hover:bg-surface-gray-2'
         "
       >
-        <BrandLogo v-model="brand" class="h-8 max-w-16 flex-shrink-0" />
+        <BrandLogo v-model="brand" class="size-8 shrink-0" />
         <div
           class="flex flex-1 flex-col text-left duration-300 ease-in-out truncate"
           :class="
@@ -20,8 +20,8 @@
               : 'ml-2 w-auto opacity-100'
           "
         >
-          <div class="text-base-medium leading-none text-ink-gray-9 truncate">
-            {{ __(brand.name || 'CRM') }}
+          <div class="text-base-medium font-semibold leading-none text-ink-gray-9 truncate">
+            {{ __(brand.name || 'Crestara CRM') }}
           </div>
           <div class="mt-1 text-sm leading-none text-ink-gray-7 truncate">
             {{ user.full_name }}
@@ -71,7 +71,7 @@ const user = computed(() => getUser() || {})
 const apps = createResource({
   url: 'frappe.apps.get_apps',
   cache: 'apps',
-  auto: true,
+  auto: false,
   transform: (data) => [deskApp(), ...crmSiblingApps(data)],
 })
 

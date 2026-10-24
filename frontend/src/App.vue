@@ -5,9 +5,10 @@
     <Layout v-else-if="session.isLoggedIn" class="isolate">
       <router-view :key="$route.fullPath" />
     </Layout>
+    <router-view v-else />
     <Dialogs />
-    <DoctypeModals />
-    <EventNotificationPopup />
+    <DoctypeModals v-if="session.isLoggedIn" />
+    <EventNotificationPopup v-if="session.isLoggedIn" />
   </FrappeUIProvider>
 </template>
 

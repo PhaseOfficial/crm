@@ -1,75 +1,40 @@
 <template>
   <Dialog v-model:open="show" :size="'sm'">
     <template #body>
-      <div class="p-4 pt-5">
+      <div class="p-6 pt-6">
         <div class="flex justify-center">
-          <div class="flex flex-col items-center">
-            <CRMLogo class="mb-3 size-12" />
-            <h3 class="text-2xl-semibold text-ink-gray-9">Frappe CRM</h3>
+          <div class="flex flex-col items-center text-center">
+            <img
+              src="/crestara_logo.png"
+              alt="Crestara CRM"
+              class="mb-3 h-12 w-auto object-contain max-w-[180px]"
+            />
+            <h3 class="text-xl font-bold text-ink-gray-9">Crestara CRM</h3>
+            <p class="text-xs text-ink-gray-5 mt-1">
+              {{ __('Modern customer relationship & pipeline management') }}
+            </p>
           </div>
         </div>
-        <hr class="border-t my-3 mx-2" />
-        <div>
-          <a
-            v-for="link in links"
-            :key="link.label"
-            class="flex py-2 px-2 hover:bg-surface-gray-1 rounded cursor-pointer"
-            target="_blank"
-            :href="link.url"
-          >
-            <component
-              :is="link.icon"
-              v-if="link.icon"
-              class="size-4 mr-2 text-ink-gray-7"
-            />
-            <span class="text-base text-ink-gray-8">
-              {{ link.label }}
-            </span>
-          </a>
+        <hr class="border-t my-4" />
+        <div class="space-y-2 text-center text-sm text-ink-gray-6">
+          <p class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4">
+            {{ __('Version 1.0.0') }}
+          </p>
+          <p class="text-xs text-ink-gray-5">
+            {{ __('Integrated with Supabase cloud database & real-time auth') }}
+          </p>
         </div>
-        <hr class="border-t my-3 mx-2" />
-        <p class="text-sm text-ink-gray-6 px-2 mt-2">
-          © Frappe Technologies Pvt. Ltd. and contributors
+        <hr class="border-t my-4" />
+        <p class="text-xs text-center text-ink-gray-4">
+          © {{ new Date().getFullYear() }} Crestara. {{ __('All rights reserved.') }}
         </p>
       </div>
     </template>
   </Dialog>
 </template>
+
 <script setup>
-import CRMLogo from '@/components/Icons/CRMLogo.vue'
-import LucideGlobe from '~icons/lucide/globe'
-import LucideGitHub from '~icons/lucide/github'
-import LucideHeadset from '~icons/lucide/headset'
-import LucideBug from '~icons/lucide/bug'
-import LucideBookOpen from '~icons/lucide/book-open'
+import { Dialog } from 'frappe-ui'
 
 let show = defineModel({ type: Boolean })
-
-let links = [
-  {
-    label: __('Website'),
-    url: 'https://frappe.io/crm',
-    icon: LucideGlobe,
-  },
-  {
-    label: __('GitHub Repository'),
-    url: 'https://github.com/frappe/crm',
-    icon: LucideGitHub,
-  },
-  {
-    label: __('Documentation'),
-    url: 'https://docs.frappe.io/crm',
-    icon: LucideBookOpen,
-  },
-  {
-    label: __('Report an Issue'),
-    url: 'https://github.com/frappe/crm/issues',
-    icon: LucideBug,
-  },
-  {
-    label: __('Contact Support'),
-    url: 'https://support.frappe.io',
-    icon: LucideHeadset,
-  },
-]
 </script>

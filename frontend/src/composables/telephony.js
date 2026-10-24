@@ -8,7 +8,7 @@ export const callEnabled = ref(false)
 createResource({
   url: 'crm.integrations.api.is_call_integration_enabled',
   cache: 'Is Call Integration Enabled',
-  auto: true,
+  auto: false,
   onSuccess: (data) => {
     integrations.value = data.integrations || {}
     defaultCallingMedium.value = data.default_calling_medium

@@ -8,20 +8,15 @@ let personaChecked = false
 export const PERSONA_DONE_KEY = 'crm_persona_captured'
 
 async function shouldCapturePersona() {
-  // Client-side flag guards against re-prompting if the server persist failed.
-  if (localStorage.getItem(PERSONA_DONE_KEY)) return false
-  const captured = await call('frappe.client.get_single_value', {
-    doctype: 'FCRM Settings',
-    field: 'persona_captured',
-  })
-  if (captured) return false
-  // The wizard only feeds telemetry; skip it entirely if the user opted out.
-  const { enabled } =
-    (await call('frappe.utils.telemetry.pulse.client.boot_config')) || {}
-  return !!enabled
+  return false
 }
 
 const routes = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/pages/Login.vue'),
+  },
   {
     path: '/',
     name: 'Home',
@@ -158,8 +153,24 @@ let router = createRouter({
 router.beforeEach(async (to, from, next) => {
   router.previousRoute = from
 
-  const { isLoggedIn, user } = sessionStore()
+  const session = sessionStore()
+  if (!session.isInitialized) {
+    try {
+      await session.initPromise
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  const { isLoggedIn, user } = session
   const { users, isCrmUser, isAdmin } = usersStore()
+
+  if (to.name === 'Login') {
+    if (isLoggedIn) {
+      return next({ name: 'Home' })
+    }
+    return next()
+  }
 
   if (isLoggedIn && !users.fetched) {
     try {
@@ -224,7 +235,7 @@ router.beforeEach(async (to, from, next) => {
       next({ name: route_name, params: { viewType: type } })
     }
   } else if (!isLoggedIn) {
-    window.location.href = '/login?redirect-to=/crm'
+    next({ name: 'Login' })
   } else if (to.matched.length === 0) {
     next({ name: 'Invalid Page' })
   } else if (['Deal', 'Lead'].includes(to.name) && !to.hash) {

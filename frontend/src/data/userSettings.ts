@@ -1,4 +1,3 @@
-import { call } from 'frappe-ui'
 import { ref, reactive, readonly, Ref } from 'vue'
 
 export interface UserSettings {
@@ -21,11 +20,6 @@ export interface UseUserSettingsReturn {
   userSettingsCache: Readonly<UserSettingsCache>
 }
 
-export interface FrappeCallResponse {
-  message?: string
-  [key: string]: unknown
-}
-
 const userSettingsCache: UserSettingsCache = reactive({})
 
 export function useUserSettings(): UseUserSettingsReturn {
@@ -41,21 +35,18 @@ export function useUserSettings(): UseUserSettingsReturn {
       loading.value = true
       error.value = null
 
-      const response: string = await call(
-        'frappe.model.utils.user_settings.get',
-        {
-          doctype,
-        },
-      )
+      let settings: UserSettings = {}
+      try {
+        const stored = localStorage.getItem(`crm_user_settings_${doctype}`)
+        if (stored) {
+          settings = JSON.parse(stored)
+        }
+      } catch {
+        settings = {}
+      }
 
-      const settings: UserSettings = JSON.parse(response || '{}')
       userSettingsCache[doctype] = settings
       return settings
-    } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error(String(err))
-      error.value = errorObj
-      console.error('Error getting user settings:', err)
-      throw errorObj
     } finally {
       loading.value = false
     }
@@ -68,13 +59,6 @@ export function useUserSettings(): UseUserSettingsReturn {
   ): Promise<UserSettings> => {
     if (!doctype || !key) {
       throw new Error('Doctype and key are required')
-    }
-
-    if (
-      (window as Window & { frappe?: { session?: { user?: string } } })?.frappe
-        ?.session?.user === 'Guest'
-    ) {
-      return Promise.resolve({})
     }
 
     try {
@@ -108,7 +92,6 @@ export function useUserSettings(): UseUserSettingsReturn {
     } catch (err) {
       const errorObj = err instanceof Error ? err : new Error(String(err))
       error.value = errorObj
-
       console.error('Error saving user settings:', err)
       throw errorObj
     } finally {
@@ -136,7 +119,6 @@ export function useUserSettings(): UseUserSettingsReturn {
     } catch (err) {
       const errorObj = err instanceof Error ? err : new Error(String(err))
       error.value = errorObj
-
       console.error('Error removing user setting:', err)
       throw errorObj
     } finally {
@@ -156,22 +138,17 @@ export function useUserSettings(): UseUserSettingsReturn {
       loading.value = true
       error.value = null
 
-      const response: UserSettings = await call(
-        'frappe.model.utils.user_settings.save',
-        {
-          doctype,
-          user_settings: JSON.stringify(userSettings),
-        },
-      )
+      try {
+        localStorage.setItem(
+          `crm_user_settings_${doctype}`,
+          JSON.stringify(userSettings),
+        )
+      } catch (e) {
+        console.warn('Could not persist user settings to localStorage:', e)
+      }
 
-      userSettingsCache[doctype] = response
-      return response
-    } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error(String(err))
-      error.value = errorObj
-
-      console.error('Error updating user settings:', err)
-      throw errorObj
+      userSettingsCache[doctype] = userSettings
+      return userSettings
     } finally {
       loading.value = false
     }

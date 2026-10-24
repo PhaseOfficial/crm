@@ -19,12 +19,13 @@ export const viewsStore = defineStore('crm-views', (doctype) => {
     params: { doctype: doctype || '' },
     cache: 'crm-views',
     initialData: [],
-    auto: true,
-    transform(views) {
+    auto: false,
+    onError() {},
+    transform(viewsList) {
       pinnedViews.value = []
       publicViews.value = []
       defaultView.value = null
-      for (let view of views) {
+      for (let view of viewsList || []) {
         viewsByName[view.name] = view
         view.type = view.type || 'list'
         if (view.pinned) {
@@ -40,7 +41,7 @@ export const viewsStore = defineStore('crm-views', (doctype) => {
           defaultView.value = view
         }
       }
-      return views
+      return viewsList
     },
   })
 
@@ -67,7 +68,9 @@ export const viewsStore = defineStore('crm-views', (doctype) => {
   }
 
   async function reload() {
-    await views.reload()
+    try {
+      await views.reload()
+    } catch {}
   }
 
   return {

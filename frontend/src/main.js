@@ -23,10 +23,21 @@ import {
   FeatherIcon,
 } from 'frappe-ui'
 
-import { telemetryPlugin } from 'frappe-ui/frappe'
 // injects the lucide SVG sprite into the DOM so the IconPicker and lucide Icons
 // (used for view icons) can render from it
 import { spritePlugin } from 'frappe-ui/icons'
+
+// Fallback boot data for standalone mode
+window.boot = window.boot || {
+  timezone: {
+    system: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    user: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+  },
+  state_options: {},
+}
+window.frappe_boot = window.frappe_boot || window.boot
+window.site_name = window.site_name || 'crm'
+window.csrf_token = window.csrf_token || ''
 
 let globalComponents = {
   Button,
@@ -46,7 +57,7 @@ let pinia = createPinia()
 let app = createApp(App)
 
 setConfig('resourceFetcher', frappeRequest)
-app.use(FrappeUI)
+app.use(FrappeUI, { socketio: false })
 app.use(spritePlugin)
 app.use(pinia)
 app.use(router)
@@ -54,28 +65,10 @@ app.use(translationPlugin)
 for (let key in globalComponents) {
   app.component(key, globalComponents[key])
 }
-app.use(telemetryPlugin, { app_name: 'crm' })
 
+const socket = initSocket()
+app.config.globalProperties.$socket = socket
 app.config.globalProperties.$dialog = createDialog
+window.$dialog = createDialog
 
-let socket
-if (import.meta.env.DEV) {
-  frappeRequest({ url: '/api/method/crm.www.crm.get_context_for_dev' }).then(
-    (values) => {
-      for (let key in values) {
-        window[key] = values[key]
-      }
-      socket = initSocket()
-      app.config.globalProperties.$socket = socket
-      app.mount('#app')
-    },
-  )
-} else {
-  socket = initSocket()
-  app.config.globalProperties.$socket = socket
-  app.mount('#app')
-}
-
-if (import.meta.env.DEV) {
-  window.$dialog = createDialog
-}
+app.mount('#app')

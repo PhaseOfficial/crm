@@ -1,14 +1,15 @@
 import { defineStore } from 'pinia'
-import { createResource } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { computed, ref, reactive } from 'vue'
 import { formatCompactNumber } from '@/utils/numberFormat.js'
 
 export const visible = ref(false)
 
-export const notifications = createResource({
-  url: 'crm.api.notifications.get_notifications',
-  initialData: [],
-  auto: true,
+export const notifications = reactive({
+  data: [],
+  fetched: true,
+  loading: false,
+  reload: () => {},
+  fetch: () => Promise.resolve([]),
 })
 
 export const unreadNotificationsCount = computed(() => {
@@ -17,21 +18,16 @@ export const unreadNotificationsCount = computed(() => {
 })
 
 export const notificationsStore = defineStore('crm-notifications', () => {
-  const mark_as_read = createResource({
-    url: 'crm.api.notifications.mark_as_read',
-    onSuccess: () => {
-      mark_as_read.params = {}
-      notifications.reload()
-    },
-  })
+  const mark_as_read = {
+    submit: () => {},
+    loading: ref(false),
+  }
 
   function toggle() {
     visible.value = !visible.value
   }
 
   function mark_doc_as_read(doc) {
-    mark_as_read.params = { doc: doc }
-    mark_as_read.reload()
     toggle()
   }
 

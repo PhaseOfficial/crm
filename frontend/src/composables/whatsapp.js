@@ -7,7 +7,7 @@ export const isWhatsappInstalled = ref(false)
 createResource({
   url: 'crm.api.whatsapp.is_whatsapp_enabled',
   cache: 'Is Whatsapp Enabled',
-  auto: true,
+  auto: false,
   onSuccess: (data) => {
     whatsappEnabled.value = Boolean(data)
   },
@@ -16,7 +16,7 @@ createResource({
 createResource({
   url: 'crm.api.whatsapp.is_whatsapp_installed',
   cache: 'Is Whatsapp Installed',
-  auto: true,
+  auto: false,
   onSuccess: (data) => {
     isWhatsappInstalled.value = Boolean(data)
   },
