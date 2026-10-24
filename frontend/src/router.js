@@ -3,6 +3,7 @@ import { call } from 'frappe-ui'
 import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
 import { viewsStore } from '@/stores/views'
+import { useBusinessStore } from '@/stores/business'
 
 let personaChecked = false
 export const PERSONA_DONE_KEY = 'crm_persona_captured'
@@ -134,6 +135,70 @@ const routes = [
     name: 'Invalid Page',
     component: () => import('@/pages/InvalidPage.vue'),
   },
+  // Business Management & Invoicing Modules
+  {
+    path: '/invoices',
+    name: 'Invoices',
+    component: () => import('@/pages/Invoices/Invoices.vue'),
+  },
+  {
+    path: '/invoices/:invoiceId',
+    name: 'InvoiceDetail',
+    component: () => import('@/pages/Invoices/InvoiceDetail.vue'),
+    props: true,
+  },
+  {
+    path: '/transactions',
+    name: 'Transactions',
+    component: () => import('@/pages/Transactions/Transactions.vue'),
+  },
+  {
+    path: '/inventory',
+    name: 'Inventory',
+    component: () => import('@/pages/Inventory/Inventory.vue'),
+  },
+  {
+    path: '/reminders',
+    name: 'PaymentReminders',
+    component: () => import('@/pages/Reminders/PaymentReminders.vue'),
+  },
+  {
+    path: '/analytics',
+    name: 'Analytics',
+    component: () => import('@/pages/Analytics/Analytics.vue'),
+  },
+  {
+    path: '/business-settings',
+    name: 'BusinessSettings',
+    component: () => import('@/pages/BusinessSettings/BusinessSettings.vue'),
+  },
+
+  // Customer Portal Modules
+  {
+    path: '/portal',
+    name: 'CustomerDashboard',
+    component: () => import('@/pages/Portal/CustomerDashboard.vue'),
+  },
+  {
+    path: '/portal/purchases',
+    name: 'CustomerPurchases',
+    component: () => import('@/pages/Portal/CustomerPurchases.vue'),
+  },
+  {
+    path: '/portal/calendar',
+    name: 'CustomerCalendar',
+    component: () => import('@/pages/Portal/CustomerCalendar.vue'),
+  },
+  {
+    path: '/portal/promotions',
+    name: 'CustomerPromotions',
+    component: () => import('@/pages/Portal/CustomerPromotions.vue'),
+  },
+  {
+    path: '/portal/account',
+    name: 'CustomerAccount',
+    component: () => import('@/pages/Portal/CustomerAccount.vue'),
+  },
   {
     path: '/not-permitted',
     name: 'Not Permitted',
@@ -164,12 +229,34 @@ router.beforeEach(async (to, from, next) => {
 
   const { isLoggedIn, user } = session
   const { users, isCrmUser, isAdmin } = usersStore()
+  const business = useBusinessStore()
+  const currentRole = business.currentRole
 
   if (to.name === 'Login') {
     if (isLoggedIn) {
+      if (currentRole === 'Customer') {
+        return next({ path: '/portal' })
+      }
       return next({ name: 'Home' })
     }
     return next()
+  }
+
+  if (!isLoggedIn) {
+    return next({ name: 'Login' })
+  }
+
+  // Customer Portal Guard
+  if (currentRole === 'Customer') {
+    if (!to.path.startsWith('/portal')) {
+      return next({ path: '/portal' })
+    }
+    return next()
+  }
+
+  // Staff Restriction to Business Settings
+  if (currentRole === 'Staff' && to.name === 'BusinessSettings') {
+    return next({ name: 'Not Permitted' })
   }
 
   if (isLoggedIn && !users.fetched) {

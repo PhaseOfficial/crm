@@ -151,7 +151,94 @@
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
-        <EmptyState v-if="!rows.length" :icon="tab.icon" name="Deals" />
+        <EmptyState v-if="tab.label === 'Deals' && !rows.length" :icon="tab.icon" name="Deals" />
+
+        <!-- Invoicing & Billing Tab Panel -->
+        <div v-if="tab.label === 'Invoicing & Billing'" class="flex flex-col flex-1 p-5 overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-semibold text-ink-gray-9">{{ __('Customer Invoices') }}</h3>
+              <p class="text-xs text-ink-gray-5">{{ __('Track billing history, outstanding balances and issue new invoices.') }}</p>
+            </div>
+            <Button
+              variant="solid"
+              :label="__('Create Invoice')"
+              iconLeft="plus"
+              @click="router.push(`/invoices/new?customer=${encodeURIComponent(contact.doc?.full_name || '')}&email=${encodeURIComponent(contact.doc?.email_id || '')}`)"
+            />
+          </div>
+
+          <div v-if="contactInvoices.length" class="overflow-x-auto rounded-lg border border-outline-base bg-surface-white">
+            <table class="w-full text-left text-sm text-ink-gray-8">
+              <thead class="bg-surface-gray-2 text-xs uppercase tracking-wider text-ink-gray-5 border-b border-outline-base">
+                <tr>
+                  <th class="px-4 py-3">{{ __('Invoice #') }}</th>
+                  <th class="px-4 py-3">{{ __('Issue Date') }}</th>
+                  <th class="px-4 py-3">{{ __('Due Date') }}</th>
+                  <th class="px-4 py-3">{{ __('Amount') }}</th>
+                  <th class="px-4 py-3">{{ __('Balance') }}</th>
+                  <th class="px-4 py-3">{{ __('Status') }}</th>
+                  <th class="px-4 py-3 text-right">{{ __('Actions') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-base">
+                <tr
+                  v-for="inv in contactInvoices"
+                  :key="inv.id"
+                  class="hover:bg-surface-gray-1 cursor-pointer transition"
+                  @click="router.push(`/invoices/${inv.id}`)"
+                >
+                  <td class="px-4 py-3 font-semibold text-ink-gray-9">{{ inv.invoice_number || inv.invoiceNumber }}</td>
+                  <td class="px-4 py-3 text-ink-gray-6">{{ inv.issue_date || inv.issueDate }}</td>
+                  <td class="px-4 py-3 text-ink-gray-6">{{ inv.due_date || inv.dueDate }}</td>
+                  <td class="px-4 py-3 font-medium text-ink-gray-9">{{ business.formatCurrency(inv.total_amount ?? inv.total) }}</td>
+                  <td class="px-4 py-3 font-medium" :class="(inv.balance_due ?? inv.balanceDue) > 0 ? 'text-ink-amber-6' : 'text-ink-green-6'">
+                    {{ business.formatCurrency(inv.balance_due ?? inv.balanceDue) }}
+                  </td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                      :class="{
+                        'bg-surface-green-2 text-ink-green-7': inv.status === 'Paid',
+                        'bg-surface-blue-2 text-ink-blue-7': inv.status === 'Sent',
+                        'bg-surface-red-2 text-ink-red-7': inv.status === 'Overdue',
+                        'bg-surface-gray-3 text-ink-gray-7': inv.status === 'Draft',
+                      }"
+                    >
+                      {{ inv.status }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      :label="__('View')"
+                      @click.stop="router.push(`/invoices/${inv.id}`)"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div
+            v-else
+            class="flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-outline-base rounded-xl bg-surface-gray-1"
+          >
+            <LucideReceiptText class="size-10 text-ink-gray-4 mb-2" />
+            <h4 class="text-sm font-semibold text-ink-gray-8">{{ __('No invoices found for this contact') }}</h4>
+            <p class="text-xs text-ink-gray-5 mt-1 max-w-sm">
+              {{ __('Create an invoice directly linked to this contact to record sales and track payment schedules.') }}
+            </p>
+            <Button
+              class="mt-4"
+              variant="outline"
+              :label="__('Generate First Invoice')"
+              iconLeft="plus"
+              @click="router.push(`/invoices/new?customer=${encodeURIComponent(contact.doc?.full_name || '')}&email=${encodeURIComponent(contact.doc?.email_id || '')}`)"
+            />
+          </div>
+        </div>
       </template>
     </Tabs>
   </div>
@@ -178,6 +265,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
+import LucideReceiptText from '~icons/lucide/receipt-text'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { validateIsImageFile, setupCustomizations } from '@/utils'
@@ -185,6 +273,7 @@ import { useContactFields } from '@/composables/useContactFields'
 import { timestampCell } from '@/composables/useTimelinePreferences'
 import { getView } from '@/utils/view'
 import { useDocument } from '@/data/document'
+import { useBusinessStore } from '@/stores/business'
 import { getSettings } from '@/stores/settings'
 import { getMeta } from '@/stores/meta'
 import { globalStore } from '@/stores/global.js'
@@ -298,12 +387,34 @@ function changeContactImage(file) {
   })
 }
 
+const business = useBusinessStore()
+
+const contactInvoices = computed(() => {
+  const name = contact.doc?.full_name || title.value || props.contactId
+  const email = contact.doc?.email_id || ''
+  return (business.invoices || []).filter((inv) => {
+    const cName = inv.client_name || inv.customerName || ''
+    const cEmail = inv.client_email || inv.customerEmail || ''
+    const org = inv.organization_name || inv.organization || ''
+    return (
+      (name && cName.toLowerCase().includes(name.toLowerCase())) ||
+      (email && cEmail.toLowerCase() === email.toLowerCase()) ||
+      (contact.doc?.company_name && org.toLowerCase().includes(contact.doc.company_name.toLowerCase()))
+    )
+  })
+})
+
 const tabIndex = ref(0)
 const tabs = [
   {
     label: 'Deals',
     icon: DealsIcon,
-    count: computed(() => deals.data?.length),
+    count: computed(() => deals.data?.length || 0),
+  },
+  {
+    label: 'Invoicing & Billing',
+    icon: LucideReceiptText,
+    count: computed(() => contactInvoices.value.length),
   },
 ]
 

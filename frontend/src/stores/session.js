@@ -141,6 +141,12 @@ export const sessionStore = defineStore('crm-session', () => {
     })
   }
 
+  async function resetPasswordForEmail({ email }) {
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/crm/login` : undefined,
+    })
+  }
+
   return {
     user,
     currentUser,
@@ -151,5 +157,6 @@ export const sessionStore = defineStore('crm-session', () => {
     login,
     logout,
     signUp,
+    resetPasswordForEmail,
   }
 })

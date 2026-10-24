@@ -174,6 +174,13 @@
 <script setup>
 import BrushCleaningIcon from '~icons/lucide/brush-cleaning'
 import LucideLayoutDashboard from '~icons/lucide/layout-dashboard'
+import LucideReceiptText from '~icons/lucide/receipt-text'
+import LucideCreditCard from '~icons/lucide/credit-card'
+import LucidePackage from '~icons/lucide/package'
+import LucideBellRing from '~icons/lucide/bell-ring'
+import LucideBarChart3 from '~icons/lucide/bar-chart-3'
+import LucideSlidersHorizontal from '~icons/lucide/sliders-horizontal'
+import LucideExternalLink from '~icons/lucide/external-link'
 import CRMLogo from '@/components/Icons/CRMLogo.vue'
 import InviteIcon from '@/components/Icons/InviteIcon.vue'
 import ConvertIcon from '@/components/Icons/ConvertIcon.vue'
@@ -199,6 +206,7 @@ import HelpIcon from '@/components/Icons/HelpIcon.vue'
 import Notifications from '@/components/Notifications.vue'
 import Settings from '@/components/Settings/Settings.vue'
 import { viewsStore } from '@/stores/views'
+import { useBusinessStore } from '@/stores/business'
 import {
   unreadNotificationsCount,
   notificationsStore,
@@ -301,13 +309,66 @@ const links = [
   },
 ]
 
+const business = useBusinessStore()
+
+const businessLinks = [
+  {
+    label: 'Invoices',
+    icon: LucideReceiptText,
+    to: 'Invoices',
+  },
+  {
+    label: 'Transactions',
+    icon: LucideCreditCard,
+    to: 'Transactions',
+  },
+  {
+    label: 'Inventory',
+    icon: LucidePackage,
+    to: 'Inventory',
+  },
+  {
+    label: 'Payment Reminders',
+    icon: LucideBellRing,
+    to: 'PaymentReminders',
+  },
+  {
+    label: 'Analytics & Reports',
+    icon: LucideBarChart3,
+    to: 'Analytics',
+  },
+  {
+    label: 'Business Settings',
+    icon: LucideSlidersHorizontal,
+    to: 'BusinessSettings',
+    condition: () => business.isAdmin,
+  },
+]
+
 const allViews = computed(() => {
   let _views = [
     {
-      name: 'All Views',
+      name: 'CRM Modules',
       hideLabel: true,
       opened: true,
       views: links
+        .filter((link) => {
+          if (link.condition) {
+            return link.condition()
+          }
+          return true
+        })
+        .map((link) => ({
+          label: link.label,
+          icon: link.icon,
+          key: link.to,
+          to: { name: link.to },
+        })),
+    },
+    {
+      name: 'Business & Finance',
+      opened: true,
+      views: businessLinks
         .filter((link) => {
           if (link.condition) {
             return link.condition()
@@ -371,6 +432,20 @@ function getIcon(routeName, icon) {
       return NoteIcon
     case 'Call Logs':
       return PhoneIcon
+    case 'Invoices':
+      return LucideReceiptText
+    case 'Transactions':
+      return LucideCreditCard
+    case 'Inventory':
+      return LucidePackage
+    case 'PaymentReminders':
+      return LucideBellRing
+    case 'Analytics':
+      return LucideBarChart3
+    case 'BusinessSettings':
+      return LucideSlidersHorizontal
+    case 'CustomerDashboard':
+      return LucideExternalLink
     default:
       return PinIcon
   }

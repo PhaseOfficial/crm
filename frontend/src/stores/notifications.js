@@ -5,7 +5,30 @@ import { formatCompactNumber } from '@/utils/numberFormat.js'
 export const visible = ref(false)
 
 export const notifications = reactive({
-  data: [],
+  data: [
+    {
+      id: 'notif-1',
+      name: 'notif-1',
+      title: 'Overdue Invoice Alert',
+      subject: 'Invoice INV-2026-003 is overdue ($1,250.00)',
+      from_user: 'System',
+      read: 0,
+      creation: new Date().toISOString(),
+      type: 'Alert',
+      route: '/invoices/inv-003',
+    },
+    {
+      id: 'notif-2',
+      name: 'notif-2',
+      title: 'Low Stock Warning',
+      subject: 'Dell UltraSharp 27" Monitor has 3 units left in stock',
+      from_user: 'Inventory System',
+      read: 0,
+      creation: new Date().toISOString(),
+      type: 'Warning',
+      route: '/inventory',
+    },
+  ],
   fetched: true,
   loading: false,
   reload: () => {},

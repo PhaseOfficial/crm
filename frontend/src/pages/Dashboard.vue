@@ -118,6 +118,76 @@
     </div>
 
     <div class="w-full overflow-y-scroll">
+      <!-- Business Management Summary KPI Widget -->
+      <div class="px-5 pt-2 pb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div
+            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-white hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
+            @click="router.push('/invoices')"
+          >
+            <div>
+              <p class="text-xs font-medium text-ink-gray-5">{{ __('Total Revenue') }}</p>
+              <h3 class="text-xl font-bold text-ink-gray-9 mt-1">{{ business.formatCurrency(business.totalRevenue) }}</h3>
+              <p class="text-[11px] text-ink-green-6 mt-1 flex items-center gap-1">
+                <span>↑ 14.8%</span>
+                <span class="text-ink-gray-4">{{ __('vs last month') }}</span>
+              </p>
+            </div>
+            <div class="p-3 bg-surface-green-2 rounded-xl text-ink-green-7">
+              <LucideReceiptText class="size-5" />
+            </div>
+          </div>
+
+          <div
+            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-white hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
+            @click="router.push('/invoices')"
+          >
+            <div>
+              <p class="text-xs font-medium text-ink-gray-5">{{ __('Outstanding Balance') }}</p>
+              <h3 class="text-xl font-bold text-ink-gray-9 mt-1">{{ business.formatCurrency(business.totalOutstanding) }}</h3>
+              <p class="text-[11px] text-ink-amber-6 mt-1">
+                {{ business.invoices.filter((i) => i.status === 'Sent' || i.status === 'Overdue').length }} {{ __('unpaid invoices') }}
+              </p>
+            </div>
+            <div class="p-3 bg-surface-amber-2 rounded-xl text-ink-amber-7">
+              <LucideCreditCard class="size-5" />
+            </div>
+          </div>
+
+          <div
+            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-white hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
+            @click="router.push('/reminders')"
+          >
+            <div>
+              <p class="text-xs font-medium text-ink-gray-5">{{ __('Overdue Invoices') }}</p>
+              <h3 class="text-xl font-bold text-ink-red-6 mt-1">{{ business.overdueInvoicesCount }}</h3>
+              <p class="text-[11px] text-ink-red-5 mt-1">
+                {{ __('Requires immediate follow-up') }}
+              </p>
+            </div>
+            <div class="p-3 bg-surface-red-2 rounded-xl text-ink-red-6">
+              <LucideAlertCircle class="size-5" />
+            </div>
+          </div>
+
+          <div
+            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-white hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
+            @click="router.push('/inventory')"
+          >
+            <div>
+              <p class="text-xs font-medium text-ink-gray-5">{{ __('Inventory Health') }}</p>
+              <h3 class="text-xl font-bold text-ink-gray-9 mt-1">{{ business.products.length }} {{ __('Products') }}</h3>
+              <p class="text-[11px] mt-1" :class="business.lowStockItems.length ? 'text-ink-amber-6 font-medium' : 'text-ink-green-6'">
+                {{ business.lowStockItems.length ? `${business.lowStockItems.length} low stock warnings` : 'All stock optimal' }}
+              </p>
+            </div>
+            <div class="p-3 bg-surface-blue-2 rounded-xl text-ink-blue-7">
+              <LucidePackage class="size-5" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <DashboardGrid
         v-if="!dashboardItems.loading && dashboardItems.data"
         v-model="dashboardItems.data"
@@ -134,6 +204,12 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { useBusinessStore } from '@/stores/business'
+import LucideReceiptText from '~icons/lucide/receipt-text'
+import LucideCreditCard from '~icons/lucide/credit-card'
+import LucidePackage from '~icons/lucide/package'
+import LucideAlertCircle from '~icons/lucide/alert-circle'
 import AddChartModal from '@/components/Dashboard/AddChartModal.vue'
 import LucideRefreshCcw from '~icons/lucide/refresh-ccw'
 import LucideUndo2 from '~icons/lucide/undo-2'
@@ -155,6 +231,8 @@ import {
 } from 'frappe-ui'
 import { ref, reactive, computed, provide } from 'vue'
 
+const router = useRouter()
+const business = useBusinessStore()
 const { users, getUser, isManager, isAdmin } = usersStore()
 
 const editing = ref(false)

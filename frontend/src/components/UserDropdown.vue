@@ -20,11 +20,16 @@
               : 'ml-2 w-auto opacity-100'
           "
         >
-          <div class="text-base-medium font-semibold leading-none text-ink-gray-9 truncate">
-            {{ __(brand.name || 'Crestara CRM') }}
+          <div class="flex items-center gap-1.5 truncate">
+            <span class="text-base-medium font-semibold leading-none text-ink-gray-9 truncate">
+              {{ __(brand.name || 'Crestara CRM') }}
+            </span>
+            <span class="rounded bg-surface-gray-3 px-1 py-0.5 text-[10px] font-medium text-ink-gray-7">
+              {{ business.currentRole }}
+            </span>
           </div>
           <div class="mt-1 text-sm leading-none text-ink-gray-7 truncate">
-            {{ user.full_name }}
+            {{ user.full_name || user.email || 'User' }}
           </div>
         </div>
         <div
@@ -52,16 +57,20 @@ import AppsIcon from '@/components/Icons/AppsIcon.vue'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
 import { getSettings } from '@/stores/settings'
+import { useBusinessStore } from '@/stores/business'
 import { showSettings, isMobileView } from '@/composables/settings'
 import { showAboutModal } from '@/composables/modals'
 import { confirmLoginToFrappeCloud } from '@/composables/frappecloud'
 import { createResource, Dropdown } from 'frappe-ui'
 import { computed, h, markRaw } from 'vue'
+import { useRouter } from 'vue-router'
 
 defineProps({
   isCollapsed: { type: Boolean, default: false },
 })
 
+const router = useRouter()
+const business = useBusinessStore()
 const { settings, brand } = getSettings()
 const { logout } = sessionStore()
 const { getUser } = usersStore()
@@ -76,34 +85,50 @@ const apps = createResource({
 })
 
 const dropdownItems = computed(() => {
-  if (!settings.value?.dropdown_items) return []
-
-  let items = settings.value.dropdown_items
-
-  let _dropdownItems = [
+  const items = [
     {
-      group: 'Dropdown Items',
-      hideLabel: true,
-      items: [],
+      group: 'Workspace',
+      items: [
+        {
+          label: __('Customer Portal'),
+          icon: 'external-link',
+          onClick: () => router.push('/portal'),
+        },
+        ...(business.isAdmin
+          ? [
+              {
+                label: __('Business Settings'),
+                icon: 'sliders',
+                onClick: () => router.push('/business-settings'),
+              },
+            ]
+          : []),
+      ],
+    },
+    {
+      group: 'Account & Preferences',
+      items: [
+        {
+          label: __('Settings'),
+          icon: 'settings',
+          onClick: () => (showSettings.value = true),
+          condition: () => !isMobileView.value,
+        },
+        {
+          label: __('About Crestara CRM'),
+          icon: 'info',
+          onClick: () => (showAboutModal.value = true),
+        },
+        {
+          label: __('Log out'),
+          icon: 'log-out',
+          onClick: () => logout.submit(),
+        },
+      ],
     },
   ]
 
-  items.forEach((item) => {
-    if (item.hidden) return
-    if (item.type !== 'Separator') {
-      _dropdownItems[_dropdownItems.length - 1].items.push(
-        dropdownItemObj(item),
-      )
-    } else {
-      _dropdownItems.push({
-        group: '',
-        hideLabel: true,
-        items: [],
-      })
-    }
-  })
-
-  return _dropdownItems
+  return items
 })
 
 function dropdownItemObj(item) {

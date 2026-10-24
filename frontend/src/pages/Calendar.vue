@@ -30,7 +30,7 @@
         enableShortcuts: false,
         noBorder: true,
       }"
-      :events="events.data"
+      :events="allCalendarEvents"
       :onClick="showDetails"
       :onDblClick="editDetails"
       :onCellClick="newEvent"
@@ -184,13 +184,16 @@ import {
   toast,
 } from 'frappe-ui'
 import { onMounted, ref, computed, provide, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useBusinessStore } from '@/stores/business'
 
 const { user } = sessionStore()
 const { $dialog } = globalStore()
 const { settings } = getSettings()
 const { users, getUser } = usersStore()
 const route = useRoute()
+const router = useRouter()
+const business = useBusinessStore()
 
 const modeMap = {
   Daily: 'Day',
@@ -281,6 +284,36 @@ const events = createListResource({
 
 provide('events', events)
 
+const businessEvents = computed(() => {
+  return (business.invoices || []).map((inv) => {
+    const num = inv.invoice_number || inv.invoiceNumber || inv.id
+    const client = inv.client_name || inv.customerName || 'Client'
+    const due = inv.due_date || inv.dueDate || new Date().toISOString().split('T')[0]
+    const bal = inv.balance_due ?? inv.balanceDue ?? 0
+    const tot = inv.total_amount ?? inv.total ?? 0
+    return {
+      id: `inv-${inv.id}`,
+      title: `Invoice Due: ${num} (${client})`,
+      description: `Outstanding balance: ${business.formatCurrency(bal)}. Total: ${business.formatCurrency(tot)}`,
+      status: inv.status,
+      fromDate: due,
+      toDate: due,
+      fromTime: '09:00',
+      toTime: '10:00',
+      isFullDay: true,
+      eventType: 'Billing',
+      color: inv.status === 'Paid' ? '#10b981' : inv.status === 'Overdue' ? '#ef4444' : '#f59e0b',
+      isInvoice: true,
+      invoiceId: inv.id,
+    }
+  })
+})
+
+const allCalendarEvents = computed(() => {
+  const crmEvents = Array.isArray(events.data) ? events.data : []
+  return [...crmEvents, ...businessEvents.value]
+})
+
 const eventPanel = ref(null)
 const showEventPanel = ref(false)
 const event = ref({})
@@ -301,6 +334,11 @@ function removeTempEvents() {
 function openEvent(e, nextMode, reloadEvent = false) {
   const _e = e?.calendarEvent || e
   if (!_e?.id || isTempEvent(_e.id)) return
+  if (_e?.isInvoice || _e?.id?.startsWith('inv-')) {
+    const invId = _e.invoiceId || _e.id.replace('inv-', '')
+    router.push(`/invoices/${invId}`)
+    return
+  }
   removeTempEvents()
   showEventPanel.value = true
   event.value = { id: _e.id, reloadEvent }
