@@ -61,7 +61,7 @@ import { useBusinessStore } from '@/stores/business'
 import { showSettings, isMobileView } from '@/composables/settings'
 import { showAboutModal } from '@/composables/modals'
 import { confirmLoginToFrappeCloud } from '@/composables/frappecloud'
-import { createResource, Dropdown } from 'frappe-ui'
+import { createResource, Dropdown, useTheme } from 'frappe-ui'
 import { computed, h, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -74,6 +74,7 @@ const business = useBusinessStore()
 const { settings, brand } = getSettings()
 const { logout } = sessionStore()
 const { getUser } = usersStore()
+const { currentTheme, setTheme } = useTheme()
 
 const user = computed(() => getUser() || {})
 
@@ -108,6 +109,11 @@ const dropdownItems = computed(() => {
     {
       group: 'Account & Preferences',
       items: [
+        {
+          label: currentTheme.value === 'dark' ? __('Light Theme') : __('Dark Theme'),
+          icon: currentTheme.value === 'dark' ? 'sun' : 'moon',
+          onClick: () => setTheme(currentTheme.value === 'dark' ? 'light' : 'dark'),
+        },
         {
           label: __('Settings'),
           icon: 'settings',

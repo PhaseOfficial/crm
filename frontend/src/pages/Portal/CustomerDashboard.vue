@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Welcome Header -->
-    <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-ink-gray-9">
           {{ __('Welcome back, {0}!', [business.currentUser.full_name]) }}
@@ -19,7 +19,7 @@
 
     <!-- Quick Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Outstanding Balance') }}</span>
           <span class="lucide-wallet size-5 text-amber-500" />
@@ -32,7 +32,7 @@
         </p>
       </div>
 
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Total Purchases') }}</span>
           <span class="lucide-receipt size-5 text-blue-500" />
@@ -45,7 +45,7 @@
         </p>
       </div>
 
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Active Subscriptions') }}</span>
           <span class="lucide-repeat size-5 text-emerald-500" />
@@ -53,12 +53,12 @@
         <div class="mt-3 text-2xl font-bold text-ink-gray-9">
           1
         </div>
-        <p class="text-xs text-emerald-600 mt-1">
+        <p class="text-xs text-ink-green-6 mt-1">
           {{ __('Next renewal Nov 15, 2026') }}
         </p>
       </div>
 
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Active Promotions') }}</span>
           <span class="lucide-tag size-5 text-purple-500" />
@@ -66,14 +66,14 @@
         <div class="mt-3 text-2xl font-bold text-ink-gray-9">
           {{ business.promotions.length }}
         </div>
-        <router-link to="/portal/promotions" class="text-xs text-blue-600 hover:underline mt-1 block">
+        <router-link to="/portal/promotions" class="text-xs text-ink-blue-6 hover:underline mt-1 block">
           {{ __('View available discounts →') }}
         </router-link>
       </div>
     </div>
 
     <!-- Recent Invoices Table -->
-    <div class="bg-surface-white rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
+    <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
       <div class="px-6 py-4 border-b border-outline-gray-1 flex items-center justify-between">
         <h2 class="text-base font-bold text-ink-gray-9">{{ __('Recent Invoices') }}</h2>
         <router-link to="/portal/purchases" class="text-sm font-medium text-blue-600 hover:text-blue-800">
@@ -168,15 +168,15 @@ function formatNum(num) {
 function getStatusClass(status) {
   switch (status) {
     case 'Paid':
-      return 'bg-green-50 text-green-700 border border-green-200'
+      return 'bg-surface-green-2 text-ink-green-7'
     case 'Overdue':
-      return 'bg-red-50 text-red-700 border border-red-200'
+      return 'bg-surface-red-2 text-ink-red-7'
     case 'Issued':
-      return 'bg-blue-50 text-blue-700 border border-blue-200'
+      return 'bg-surface-blue-2 text-ink-blue-7'
     case 'Partially paid':
-      return 'bg-amber-50 text-amber-700 border border-amber-200'
+      return 'bg-surface-amber-2 text-ink-amber-7'
     default:
-      return 'bg-surface-gray-2 text-ink-gray-6'
+      return 'bg-surface-gray-2 text-ink-gray-7'
   }
 }
 </script>

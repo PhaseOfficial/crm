@@ -23,7 +23,7 @@
         <div class="flex items-center gap-2">
           <select
             v-model="selectedMethod"
-            class="bg-surface-white border border-outline-gray-2 rounded-lg px-3 py-1.5 text-xs font-medium text-ink-gray-8 focus:outline-none"
+            class="bg-surface-gray-1 border border-outline-gray-2 rounded-lg px-3 py-1.5 text-xs font-medium text-ink-gray-9 focus:outline-none"
           >
             <option value="All">{{ __('All Payment Methods') }}</option>
             <option value="Credit Card">{{ __('Credit Card') }}</option>
@@ -43,7 +43,7 @@
       </div>
 
       <!-- Transactions Ledger Table -->
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
@@ -70,18 +70,18 @@
                 <td class="py-4 px-6 font-medium text-ink-gray-9">
                   {{ tx.client_name }}
                 </td>
-                <td class="py-4 px-6 text-blue-600 font-medium">
+                <td class="py-4 px-6 text-ink-blue-3 font-medium">
                   <router-link :to="`/invoices/${tx.invoice_id}`" class="hover:underline">
                     {{ tx.invoice_number }}
                   </router-link>
                 </td>
                 <td class="py-4 px-6 text-ink-gray-6">{{ tx.payment_date }}</td>
                 <td class="py-4 px-6 text-ink-gray-7">{{ tx.payment_method }}</td>
-                <td class="py-4 px-6 font-bold text-emerald-600">
+                <td class="py-4 px-6 font-bold text-ink-green-3">
                   +${{ formatNum(tx.amount) }}
                 </td>
                 <td class="py-4 px-6">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-surface-green-2 text-ink-green-7 border border-outline-green-2">
                     {{ __(tx.status) }}
                   </span>
                 </td>
@@ -110,9 +110,9 @@
     <!-- Receipt Details Modal -->
     <Dialog v-model:open="showReceiptModal" :size="'sm'">
       <template #body>
-        <div v-if="activeTx" class="p-6 bg-surface-white space-y-4 text-sm">
+        <div v-if="activeTx" class="p-6 bg-surface-base space-y-4 text-sm">
           <div class="text-center pb-4 border-b border-outline-gray-1">
-            <span class="lucide-check-circle-2 size-10 text-emerald-500 mx-auto block mb-2" />
+            <span class="lucide-check-circle-2 size-10 text-ink-green-3 mx-auto block mb-2" />
             <h3 class="text-lg font-bold text-ink-gray-9">{{ __('Payment Settled') }}</h3>
             <p class="text-xs text-ink-gray-4 font-mono">{{ activeTx.transaction_ref }}</p>
           </div>
@@ -124,7 +124,7 @@
             </div>
             <div class="flex justify-between">
               <span class="text-ink-gray-5">{{ __('Invoice:') }}</span>
-              <span class="font-medium text-blue-600">{{ activeTx.invoice_number }}</span>
+              <span class="font-medium text-ink-blue-3">{{ activeTx.invoice_number }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-ink-gray-5">{{ __('Date:') }}</span>
@@ -136,7 +136,7 @@
             </div>
             <div class="flex justify-between pt-2 border-t border-outline-gray-1 text-sm font-bold">
               <span class="text-ink-gray-9">{{ __('Amount Received:') }}</span>
-              <span class="text-emerald-600">${{ formatNum(activeTx.amount) }}</span>
+              <span class="text-ink-green-3">${{ formatNum(activeTx.amount) }}</span>
             </div>
           </div>
 

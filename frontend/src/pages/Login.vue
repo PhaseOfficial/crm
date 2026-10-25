@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-screen items-center justify-center bg-surface-gray-2 px-4 py-12 sm:px-6 lg:px-8">
-    <div class="w-full max-w-md space-y-6 rounded-2xl bg-surface-white p-8 shadow-sm border border-outline-base">
+    <div class="w-full max-w-md space-y-6 rounded-2xl bg-surface-base p-8 shadow-sm border border-outline-base">
       <div class="text-center">
         <div class="flex justify-center mb-4">
           <img
@@ -36,7 +36,7 @@
           :class="[
             'w-1/2 rounded-md py-1.5 transition-all',
             authMode === 'signin'
-              ? 'bg-surface-white text-ink-gray-9 shadow-sm'
+              ? 'bg-surface-base text-ink-gray-9 shadow-sm'
               : 'text-ink-gray-5 hover:text-ink-gray-8',
           ]"
           @click="setMode('signin')"
@@ -48,7 +48,7 @@
           :class="[
             'w-1/2 rounded-md py-1.5 transition-all',
             authMode === 'signup'
-              ? 'bg-surface-white text-ink-gray-9 shadow-sm'
+              ? 'bg-surface-base text-ink-gray-9 shadow-sm'
               : 'text-ink-gray-5 hover:text-ink-gray-8',
           ]"
           @click="setMode('signup')"

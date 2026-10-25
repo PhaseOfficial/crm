@@ -14,31 +14,31 @@
     <div class="flex-1 overflow-y-auto p-6 space-y-6">
       <!-- Reminder Overview Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Overdue Invoices Pending Reminder') }}</span>
-          <div class="mt-2 text-2xl font-bold text-red-600">
+          <div class="mt-2 text-2xl font-bold text-ink-red-3">
             {{ business.reminders.filter(r => r.status === 'Overdue').length }}
           </div>
-          <span class="text-xs text-red-500 mt-1 block">{{ __('Requires immediate collection outreach') }}</span>
+          <span class="text-xs text-ink-red-2 mt-1 block">{{ __('Requires immediate collection outreach') }}</span>
         </div>
 
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Upcoming 30-Day Deadlines') }}</span>
-          <div class="mt-2 text-2xl font-bold text-amber-600">
+          <div class="mt-2 text-2xl font-bold text-ink-amber-3">
             {{ business.reminders.filter(r => r.status === 'Upcoming').length }}
           </div>
-          <span class="text-xs text-ink-gray-4 mt-1 block">{{ __('Automated schedule armed') }}</span>
+          <span class="text-xs text-ink-gray-5 mt-1 block">{{ __('Automated schedule armed') }}</span>
         </div>
 
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Reminder Delivery Health') }}</span>
-          <div class="mt-2 text-2xl font-bold text-emerald-600">100%</div>
-          <span class="text-xs text-emerald-600 mt-1 block">{{ __('Zero delivery failures') }}</span>
+          <div class="mt-2 text-2xl font-bold text-ink-green-3">100%</div>
+          <span class="text-xs text-ink-green-2 mt-1 block">{{ __('Zero delivery failures') }}</span>
         </div>
       </div>
 
       <!-- Reminders Table -->
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
         <div class="px-6 py-4 border-b border-outline-gray-1 flex items-center justify-between">
           <h2 class="text-base font-bold text-ink-gray-9">{{ __('Active Reminder Schedule') }}</h2>
           <span class="text-xs text-ink-gray-5">{{ __('Automated notices sent via verified company email') }}</span>
@@ -72,7 +72,7 @@
                   <div class="text-xs text-ink-gray-4">{{ rem.client_email }}</div>
                 </td>
                 <td class="py-4 px-6 text-ink-gray-6">{{ rem.due_date }}</td>
-                <td class="py-4 px-6 font-bold" :class="rem.status === 'Overdue' ? 'text-red-600' : 'text-ink-gray-9'">
+                <td class="py-4 px-6 font-bold" :class="rem.status === 'Overdue' ? 'text-ink-red-3' : 'text-ink-gray-9'">
                   ${{ formatNum(rem.balance_due) }}
                 </td>
                 <td class="py-4 px-6 text-xs text-ink-gray-7">{{ rem.reminder_type }}</td>
@@ -80,7 +80,7 @@
                 <td class="py-4 px-6">
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                    :class="rem.delivery_status === 'Delivered' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'"
+                    :class="rem.delivery_status === 'Delivered' ? 'bg-surface-green-2 text-ink-green-7 border border-outline-green-2' : 'bg-surface-blue-2 text-ink-blue-7 border border-outline-blue-2'"
                   >
                     {{ rem.delivery_status }}
                   </span>

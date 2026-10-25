@@ -122,7 +122,7 @@
       <div class="px-5 pt-2 pb-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div
-            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-white hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
+            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-base hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
             @click="router.push('/invoices')"
           >
             <div>
@@ -139,7 +139,7 @@
           </div>
 
           <div
-            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-white hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
+            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-base hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
             @click="router.push('/invoices')"
           >
             <div>
@@ -155,7 +155,7 @@
           </div>
 
           <div
-            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-white hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
+            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-base hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
             @click="router.push('/reminders')"
           >
             <div>
@@ -171,7 +171,7 @@
           </div>
 
           <div
-            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-white hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
+            class="flex items-center justify-between p-4 rounded-xl border border-outline-base bg-surface-base hover:border-outline-gray-3 transition cursor-pointer shadow-sm"
             @click="router.push('/inventory')"
           >
             <div>

@@ -1,12 +1,12 @@
 <template>
   <Dialog v-model:open="show" :size="'md'">
     <template #body>
-      <div class="p-6 bg-surface-white space-y-4">
+      <div class="p-6 bg-surface-base space-y-4">
         <div class="flex items-center justify-between border-b border-outline-gray-1 pb-4">
           <h2 class="text-lg font-bold text-ink-gray-9">
             {{ __('Record Payment for {0}', [invoice?.invoice_number || '']) }}
           </h2>
-          <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
+          <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-surface-blue-2 text-ink-blue-7 border border-outline-blue-2">
             {{ invoice?.currency || 'USD' }}
           </span>
         </div>
@@ -22,11 +22,11 @@
           </div>
           <div class="flex justify-between">
             <span class="text-ink-gray-5">{{ __('Amount Already Paid:') }}</span>
-            <span class="font-medium text-emerald-600">${{ formatNum(invoice?.amount_paid) }}</span>
+            <span class="font-medium text-ink-green-3">${{ formatNum(invoice?.amount_paid) }}</span>
           </div>
           <div class="flex justify-between pt-1 border-t border-outline-gray-1 font-bold text-sm">
             <span class="text-ink-gray-7">{{ __('Remaining Balance:') }}</span>
-            <span class="text-amber-600">${{ formatNum(invoice?.balance_due) }}</span>
+            <span class="text-ink-amber-3">${{ formatNum(invoice?.balance_due) }}</span>
           </div>
         </div>
 

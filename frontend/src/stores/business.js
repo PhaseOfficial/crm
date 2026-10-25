@@ -8,6 +8,7 @@ import {
   mockPaymentReminders,
   mockPromotions,
   mockUsers,
+  initialChangeRequests,
 } from '@/data/mockBusinessData'
 
 export const useBusinessStore = defineStore('business-store', () => {
@@ -37,6 +38,7 @@ export const useBusinessStore = defineStore('business-store', () => {
   const reminders = ref(loadStorage('reminders', mockPaymentReminders))
   const promotions = ref(loadStorage('promotions', mockPromotions))
   const users = ref(loadStorage('users', mockUsers))
+  const changeRequests = ref(loadStorage('change_requests', initialChangeRequests))
 
   // Role: 'Administrator' | 'Staff' | 'Customer'
   const currentRole = ref(localStorage.getItem('crestara_current_role') || 'Administrator')
@@ -261,6 +263,87 @@ export const useBusinessStore = defineStore('business-store', () => {
   }
 
   // ==========================================
+  // CHANGE REQUEST ACTIONS
+  // ==========================================
+  const pendingChangeRequests = computed(() => {
+    return changeRequests.value.filter((r) => r.status === 'Pending')
+  })
+
+  function submitChangeRequest({ requested_details, reason }) {
+    const activeClient = currentUser.value || users.value.find((u) => u.role === 'Customer') || {}
+    const newReq = {
+      id: `cr-${Date.now()}`,
+      client_id: activeClient.id || 'usr-client-01',
+      client_name: activeClient.full_name || 'Sarah Connor',
+      client_email: activeClient.email || 'client@acme.corp',
+      organization: activeClient.company || activeClient.client_name || 'Acme Global Corp',
+      requested_date: new Date().toISOString().split('T')[0],
+      status: 'Pending',
+      reason: reason || 'Customer requested information updates.',
+      current_details: {
+        full_name: activeClient.full_name || 'Sarah Connor',
+        phone: activeClient.phone || '+1 (555) 789-0123',
+        company: activeClient.company || activeClient.client_name || 'Acme Global Corp',
+        address: activeClient.address || '450 Mission Street, Floor 14',
+        city: activeClient.city || 'San Francisco',
+        state: activeClient.state || 'CA',
+        zip: activeClient.zip || '94105',
+        tax_id: activeClient.tax_id || 'US-882-99120',
+      },
+      requested_details: { ...requested_details },
+      review_notes: '',
+      reviewed_by: null,
+      reviewed_date: null,
+    }
+
+    changeRequests.value.unshift(newReq)
+    saveStorage('change_requests', changeRequests.value)
+    return newReq
+  }
+
+  function approveChangeRequest(requestId, reviewer = 'Admin') {
+    const req = changeRequests.value.find((r) => r.id === requestId)
+    if (!req) throw new Error('Change request not found')
+
+    req.status = 'Approved'
+    req.reviewed_by = reviewer
+    req.reviewed_date = new Date().toISOString().split('T')[0]
+
+    // Apply the changes to the user record
+    const userToUpdate = users.value.find((u) => u.email === req.client_email || u.id === req.client_id)
+    if (userToUpdate) {
+      if (req.requested_details.full_name) userToUpdate.full_name = req.requested_details.full_name
+      if (req.requested_details.phone) userToUpdate.phone = req.requested_details.phone
+      if (req.requested_details.company) {
+        userToUpdate.company = req.requested_details.company
+        userToUpdate.client_name = req.requested_details.company
+      }
+      if (req.requested_details.address) userToUpdate.address = req.requested_details.address
+      if (req.requested_details.city) userToUpdate.city = req.requested_details.city
+      if (req.requested_details.state) userToUpdate.state = req.requested_details.state
+      if (req.requested_details.zip) userToUpdate.zip = req.requested_details.zip
+      if (req.requested_details.tax_id) userToUpdate.tax_id = req.requested_details.tax_id
+      saveStorage('users', users.value)
+    }
+
+    saveStorage('change_requests', changeRequests.value)
+    return req
+  }
+
+  function rejectChangeRequest(requestId, notes = '', reviewer = 'Admin') {
+    const req = changeRequests.value.find((r) => r.id === requestId)
+    if (!req) throw new Error('Change request not found')
+
+    req.status = 'Rejected'
+    req.review_notes = notes || 'Rejected by administration'
+    req.reviewed_by = reviewer
+    req.reviewed_date = new Date().toISOString().split('T')[0]
+
+    saveStorage('change_requests', changeRequests.value)
+    return req
+  }
+
+  // ==========================================
   // SETTINGS & COMPUTED METRICS
   // ==========================================
   function updateBusinessSettings(newSettings) {
@@ -303,12 +386,18 @@ export const useBusinessStore = defineStore('business-store', () => {
     reminders,
     promotions,
     users,
+    changeRequests,
+    pendingChangeRequests,
     currentRole,
     currentUser,
     isAdmin,
     setRole,
     resolveUserRole,
     formatCurrency,
+    // Change Requests
+    submitChangeRequest,
+    approveChangeRequest,
+    rejectChangeRequest,
     // Invoices
     createInvoice,
     updateInvoice,

@@ -10,7 +10,7 @@
     </div>
 
     <!-- Invoices List -->
-    <div class="bg-surface-white rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
+    <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-sm">
           <thead>
@@ -67,7 +67,7 @@
     <!-- Receipt / Invoice Viewer Dialog -->
     <Dialog v-model:open="showReceiptModal" :size="'xl'">
       <template #body>
-        <div v-if="selectedInvoice" class="p-8 bg-surface-white text-ink-gray-9 space-y-6">
+        <div v-if="selectedInvoice" class="p-8 bg-surface-base text-ink-gray-9 space-y-6">
           <!-- Receipt Header with Crestara Logo -->
           <div class="flex justify-between items-start border-b border-outline-gray-1 pb-6">
             <div>
@@ -202,15 +202,15 @@ function formatNum(num) {
 function getStatusClass(status) {
   switch (status) {
     case 'Paid':
-      return 'bg-green-50 text-green-700 border border-green-200'
+      return 'bg-surface-green-2 text-ink-green-7'
     case 'Overdue':
-      return 'bg-red-50 text-red-700 border border-red-200'
+      return 'bg-surface-red-2 text-ink-red-7'
     case 'Issued':
-      return 'bg-blue-50 text-blue-700 border border-blue-200'
+      return 'bg-surface-blue-2 text-ink-blue-7'
     case 'Partially paid':
-      return 'bg-amber-50 text-amber-700 border border-amber-200'
+      return 'bg-surface-amber-2 text-ink-amber-7'
     default:
-      return 'bg-surface-gray-2 text-ink-gray-6'
+      return 'bg-surface-gray-2 text-ink-gray-7'
   }
 }
 </script>

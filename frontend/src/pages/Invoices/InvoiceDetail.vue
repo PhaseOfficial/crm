@@ -57,7 +57,7 @@
 
     <!-- Invoice Sheet -->
     <div class="flex-1 overflow-y-auto p-4 sm:p-8">
-      <div class="max-w-4xl mx-auto bg-surface-white rounded-2xl border border-outline-gray-1 p-8 shadow-sm space-y-8">
+      <div class="max-w-4xl mx-auto bg-surface-base rounded-2xl border border-outline-gray-1 p-8 shadow-sm space-y-8">
         <!-- Top Row: Business Branding & Invoice Metadata -->
         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6 border-b border-outline-gray-1 pb-6">
           <div>
@@ -106,20 +106,20 @@
                 v-model="invoice.client_name"
                 type="text"
                 :placeholder="__('Client or Company Name')"
-                class="w-full bg-surface-white rounded-md px-3 py-1.5 text-sm border border-outline-gray-2 text-ink-gray-9 font-semibold focus:outline-none"
+                class="w-full bg-surface-base rounded-md px-3 py-1.5 text-sm border border-outline-gray-2 text-ink-gray-9 font-semibold focus:outline-none"
                 required
               />
               <input
                 v-model="invoice.contact_name"
                 type="text"
                 :placeholder="__('Primary Contact Person')"
-                class="w-full bg-surface-white rounded-md px-3 py-1.5 text-xs border border-outline-gray-2 text-ink-gray-8 focus:outline-none"
+                class="w-full bg-surface-base rounded-md px-3 py-1.5 text-xs border border-outline-gray-2 text-ink-gray-8 focus:outline-none"
               />
               <input
                 v-model="invoice.client_email"
                 type="email"
                 :placeholder="__('Billing Email Address')"
-                class="w-full bg-surface-white rounded-md px-3 py-1.5 text-xs border border-outline-gray-2 text-ink-gray-8 focus:outline-none"
+                class="w-full bg-surface-base rounded-md px-3 py-1.5 text-xs border border-outline-gray-2 text-ink-gray-8 focus:outline-none"
               />
             </div>
           </div>
@@ -128,7 +128,7 @@
             <h3 class="text-xs font-bold uppercase tracking-wider text-ink-gray-5 mb-2">{{ __('Quick Fill from Inventory') }}</h3>
             <p class="text-xs text-ink-gray-5 mb-2">{{ __('Select an item to add it as a new line item:') }}</p>
             <select
-              class="w-full bg-surface-white rounded-md px-3 py-2 text-xs border border-outline-gray-2 text-ink-gray-9 focus:outline-none"
+              class="w-full bg-surface-base rounded-md px-3 py-2 text-xs border border-outline-gray-2 text-ink-gray-9 focus:outline-none"
               @change="addItemFromInventory($event.target.value); $event.target.value = ''"
             >
               <option value="">{{ __('+ Select product or service...') }}</option>
@@ -266,12 +266,12 @@
               <span>${{ formatNum(invoice.total_amount) }}</span>
             </div>
 
-            <div v-if="!isNew" class="flex justify-between text-emerald-600 font-medium">
+            <div v-if="!isNew" class="flex justify-between text-ink-green-3 font-medium">
               <span>{{ __('Amount Paid:') }}</span>
               <span>${{ formatNum(invoice.amount_paid) }}</span>
             </div>
 
-            <div v-if="!isNew" class="flex justify-between font-bold text-base" :class="invoice.balance_due > 0 ? 'text-amber-600' : 'text-ink-gray-6'">
+            <div v-if="!isNew" class="flex justify-between font-bold text-base" :class="invoice.balance_due > 0 ? 'text-ink-amber-3' : 'text-ink-gray-6'">
               <span>{{ __('Balance Due:') }}</span>
               <span>${{ formatNum(invoice.balance_due) }}</span>
             </div>
@@ -448,13 +448,13 @@ function formatNum(num) {
 function getStatusClass(status) {
   switch (status) {
     case 'Paid':
-      return 'bg-green-50 text-green-700 border border-green-200'
+      return 'bg-surface-green-2 text-ink-green-7 border border-outline-green-2'
     case 'Overdue':
-      return 'bg-red-50 text-red-700 border border-red-200'
+      return 'bg-surface-red-2 text-ink-red-7 border border-outline-red-2'
     case 'Issued':
-      return 'bg-blue-50 text-blue-700 border border-blue-200'
+      return 'bg-surface-blue-2 text-ink-blue-7 border border-outline-blue-2'
     case 'Partially paid':
-      return 'bg-amber-50 text-amber-700 border border-amber-200'
+      return 'bg-surface-amber-2 text-ink-amber-7 border border-outline-amber-2'
     case 'Draft':
       return 'bg-surface-gray-2 text-ink-gray-7 border border-outline-gray-2'
     case 'Cancelled':

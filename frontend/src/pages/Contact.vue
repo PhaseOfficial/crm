@@ -119,12 +119,43 @@
         />
       </div>
     </Resizer>
-    <Tabs
-      v-model="tabIndex"
-      as="div"
-      :tabs="tabs"
-      class="flex flex-1 overflow-hidden flex-col [&_[role='tab']]:px-0 [&_[role='tab']]:shrink-0 [&_[role='tablist']]:px-5 [&_[role='tablist']::-webkit-scrollbar]:h-0 [&_[role='tablist']]:min-h-[45px] [&_[role='tablist']]:gap-7.5 [&_[role='tabpanel']:not([hidden])]:flex [&_[role='tabpanel']:not([hidden])]:grow"
-    >
+
+    <div class="flex flex-1 flex-col overflow-hidden">
+      <!-- Pending Change Request Banner -->
+      <div
+        v-if="pendingContactRequest"
+        class="mx-5 my-2 p-3 bg-surface-amber-2 border border-outline-amber-2 rounded-lg flex items-center justify-between text-xs text-ink-amber-7 shrink-0"
+      >
+        <div class="flex items-center gap-2">
+          <span class="lucide-alert-circle size-4 text-ink-amber-7 shrink-0" />
+          <span>
+            <strong>{{ __('Pending Change Request:') }}</strong>
+            {{ pendingContactRequest.reason }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="solid"
+            theme="green"
+            :label="__('Approve Change')"
+            @click="business.approveChangeRequest(pendingContactRequest.id, user)"
+          />
+          <Button
+            size="sm"
+            variant="subtle"
+            :label="__('Review in Settings')"
+            @click="router.push('/business-settings')"
+          />
+        </div>
+      </div>
+
+      <Tabs
+        v-model="tabIndex"
+        as="div"
+        :tabs="tabs"
+        class="flex flex-1 overflow-hidden flex-col [&_[role='tab']]:px-0 [&_[role='tab']]:shrink-0 [&_[role='tablist']]:px-5 [&_[role='tablist']::-webkit-scrollbar]:h-0 [&_[role='tablist']]:min-h-[45px] [&_[role='tablist']]:gap-7.5 [&_[role='tabpanel']:not([hidden])]:flex [&_[role='tabpanel']:not([hidden])]:grow"
+      >
       <template #tab-item="{ tab, selected }">
         <button
           class="group flex items-center gap-2 border-b border-transparent py-2.5 text-base text-ink-gray-5 duration-300 ease-in-out hover:text-ink-gray-9"
@@ -168,7 +199,7 @@
             />
           </div>
 
-          <div v-if="contactInvoices.length" class="overflow-x-auto rounded-lg border border-outline-base bg-surface-white">
+          <div v-if="contactInvoices.length" class="overflow-x-auto rounded-lg border border-outline-base bg-surface-base">
             <table class="w-full text-left text-sm text-ink-gray-8">
               <thead class="bg-surface-gray-2 text-xs uppercase tracking-wider text-ink-gray-5 border-b border-outline-base">
                 <tr>
@@ -239,8 +270,80 @@
             />
           </div>
         </div>
+
+        <!-- Change Requests Tab Panel -->
+        <div v-if="tab.label === 'Change Requests'" class="flex flex-col flex-1 p-5 overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-semibold text-ink-gray-9">{{ __('Customer Account Change Requests') }}</h3>
+              <p class="text-xs text-ink-gray-5">{{ __('Official detail and address modification requests submitted by this customer.') }}</p>
+            </div>
+          </div>
+
+          <div v-if="contactChangeRequests.length" class="overflow-x-auto rounded-lg border border-outline-base bg-surface-base">
+            <table class="w-full text-left text-sm text-ink-gray-8">
+              <thead class="bg-surface-gray-2 text-xs uppercase tracking-wider text-ink-gray-5 border-b border-outline-base">
+                <tr>
+                  <th class="px-4 py-3">{{ __('Date') }}</th>
+                  <th class="px-4 py-3">{{ __('Proposed Updates') }}</th>
+                  <th class="px-4 py-3">{{ __('Reason') }}</th>
+                  <th class="px-4 py-3">{{ __('Status') }}</th>
+                  <th class="px-4 py-3 text-right">{{ __('Action') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-base">
+                <tr v-for="req in contactChangeRequests" :key="req.id">
+                  <td class="px-4 py-3 text-xs text-ink-gray-6">{{ req.requested_date }}</td>
+                  <td class="px-4 py-3 text-xs">
+                    <div v-if="req.requested_details.company !== req.current_details.company">
+                      <strong>Company:</strong> {{ req.requested_details.company }}
+                    </div>
+                    <div v-if="req.requested_details.full_name !== req.current_details.full_name">
+                      <strong>Contact:</strong> {{ req.requested_details.full_name }}
+                    </div>
+                    <div v-if="req.requested_details.address !== req.current_details.address">
+                      <strong>Address:</strong> {{ req.requested_details.address }}
+                    </div>
+                    <div v-if="req.requested_details.phone !== req.current_details.phone">
+                      <strong>Phone:</strong> {{ req.requested_details.phone }}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-xs text-ink-gray-7">{{ req.reason }}</td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="px-2 py-0.5 rounded text-xs font-semibold"
+                      :class="{
+                        'bg-surface-amber-2 text-ink-amber-7 border border-outline-amber-2': req.status === 'Pending',
+                        'bg-surface-green-2 text-ink-green-7 border border-outline-green-2': req.status === 'Approved',
+                        'bg-surface-red-2 text-ink-red-7 border border-outline-red-2': req.status === 'Rejected',
+                      }"
+                    >
+                      {{ req.status }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <div v-if="req.status === 'Pending'" class="flex justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="solid"
+                        theme="green"
+                        :label="__('Approve')"
+                        @click="business.approveChangeRequest(req.id, user)"
+                      />
+                    </div>
+                    <span v-else class="text-xs text-ink-gray-4">{{ req.review_notes || 'Resolved' }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-else class="p-8 text-center text-xs text-ink-gray-4 border border-dashed rounded-lg">
+            {{ __('No change requests submitted by this customer.') }}
+          </div>
+        </div>
       </template>
     </Tabs>
+    </div>
   </div>
   <ErrorPage
     v-else-if="errorTitle"
@@ -266,6 +369,7 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
 import LucideReceiptText from '~icons/lucide/receipt-text'
+import LucideFileText from '~icons/lucide/file-text'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import { validateIsImageFile, setupCustomizations } from '@/utils'
@@ -404,6 +508,21 @@ const contactInvoices = computed(() => {
   })
 })
 
+const contactChangeRequests = computed(() => {
+  const email = contact.doc?.email_id || ''
+  const name = contact.doc?.full_name || ''
+  return (business.changeRequests || []).filter(
+    (r) =>
+      (email && r.client_email?.toLowerCase() === email.toLowerCase()) ||
+      (name && r.client_name?.toLowerCase().includes(name.toLowerCase())) ||
+      (contact.doc?.company_name && r.organization?.toLowerCase().includes(contact.doc.company_name.toLowerCase()))
+  )
+})
+
+const pendingContactRequest = computed(() => {
+  return contactChangeRequests.value.find((r) => r.status === 'Pending')
+})
+
 const tabIndex = ref(0)
 const tabs = [
   {
@@ -415,6 +534,11 @@ const tabs = [
     label: 'Invoicing & Billing',
     icon: LucideReceiptText,
     count: computed(() => contactInvoices.value.length),
+  },
+  {
+    label: 'Change Requests',
+    icon: LucideFileText,
+    count: computed(() => contactChangeRequests.value.length),
   },
 ]
 

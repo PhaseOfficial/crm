@@ -11,9 +11,9 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Upcoming Deadlines -->
       <div class="md:col-span-2 space-y-4">
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-6 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm">
           <h2 class="text-base font-bold text-ink-gray-9 mb-4 flex items-center gap-2">
-            <span class="lucide-calendar-days size-5 text-blue-500" />
+            <span class="lucide-calendar-days size-5 text-ink-blue-3" />
             {{ __('Scheduled Dates & Deadlines') }}
           </h2>
 
@@ -36,7 +36,7 @@
                   <h3 class="text-sm font-bold text-ink-gray-9">{{ event.title }}</h3>
                   <span
                     class="px-2 py-0.5 rounded-full text-xs font-semibold"
-                    :class="event.status === 'Action Required' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'"
+                    :class="event.status === 'Action Required' ? 'bg-surface-amber-2 text-ink-amber-7 border border-outline-amber-2' : 'bg-surface-blue-2 text-ink-blue-7 border border-outline-blue-2'"
                   >
                     {{ event.status }}
                   </span>
@@ -54,7 +54,7 @@
 
       <!-- Calendar Sidebar Summary -->
       <div class="space-y-4">
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-6 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm">
           <h3 class="text-sm font-bold text-ink-gray-9 mb-3">{{ __('Billing Summary') }}</h3>
           <div class="space-y-3 text-sm">
             <div class="flex justify-between py-2 border-b border-outline-gray-1">
@@ -72,12 +72,12 @@
           </div>
         </div>
 
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 text-xs text-blue-900 space-y-2">
-          <div class="flex items-center gap-1.5 font-bold text-sm text-blue-800">
+        <div class="bg-surface-blue-2 border border-outline-blue-2 rounded-xl p-5 text-xs text-ink-blue-7 space-y-2">
+          <div class="flex items-center gap-1.5 font-bold text-sm text-ink-blue-7">
             <span class="lucide-shield-check size-4" />
             {{ __('Automatic Reminders') }}
           </div>
-          <p>
+          <p class="opacity-90">
             {{ __('You will automatically receive email notifications 7 days prior to any invoice due date or subscription renewal.') }}
           </p>
         </div>
@@ -140,11 +140,11 @@ function formatNum(num) {
 function getEventBadge(type) {
   switch (type) {
     case 'Invoice Due':
-      return 'bg-amber-100 text-amber-800'
+      return 'bg-surface-amber-2 text-ink-amber-7 border border-outline-amber-2'
     case 'Renewal':
-      return 'bg-emerald-100 text-emerald-800'
+      return 'bg-surface-green-2 text-ink-green-7 border border-outline-green-2'
     default:
-      return 'bg-blue-100 text-blue-800'
+      return 'bg-surface-blue-2 text-ink-blue-7 border border-outline-blue-2'
   }
 }
 </script>

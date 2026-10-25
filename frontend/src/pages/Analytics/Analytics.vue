@@ -9,37 +9,37 @@
     <div class="flex-1 overflow-y-auto p-6 space-y-6">
       <!-- High Level Financial KPIs -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Gross Billed Sales') }}</span>
           <div class="mt-2 text-2xl font-bold text-ink-gray-9">${{ formatNum(totalBilled) }}</div>
-          <span class="text-xs text-ink-gray-4 mt-1 block">{{ __('All issued invoices') }}</span>
+          <span class="text-xs text-ink-gray-5 mt-1 block">{{ __('All issued invoices') }}</span>
         </div>
 
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Collected Revenue') }}</span>
-          <div class="mt-2 text-2xl font-bold text-emerald-600">${{ formatNum(business.totalRevenue) }}</div>
-          <span class="text-xs text-emerald-600 mt-1 block">{{ __('Net settled transactions') }}</span>
+          <div class="mt-2 text-2xl font-bold text-ink-green-3">${{ formatNum(business.totalRevenue) }}</div>
+          <span class="text-xs text-ink-green-2 mt-1 block">{{ __('Net settled transactions') }}</span>
         </div>
 
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Collection Efficiency') }}</span>
-          <div class="mt-2 text-2xl font-bold text-blue-600">
+          <div class="mt-2 text-2xl font-bold text-ink-blue-3">
             {{ totalBilled > 0 ? Math.round((business.totalRevenue / totalBilled) * 100) : 0 }}%
           </div>
-          <span class="text-xs text-ink-gray-4 mt-1 block">{{ __('Payment conversion rate') }}</span>
+          <span class="text-xs text-ink-gray-5 mt-1 block">{{ __('Payment conversion rate') }}</span>
         </div>
 
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Projected Q4 Revenue') }}</span>
-          <div class="mt-2 text-2xl font-bold text-purple-600">${{ formatNum(projectedRevenue) }}</div>
-          <span class="text-xs text-purple-500 mt-1 block">{{ __('Based on active pipeline & deals') }}</span>
+          <div class="mt-2 text-2xl font-bold text-purple-500">${{ formatNum(projectedRevenue) }}</div>
+          <span class="text-xs text-purple-400 mt-1 block">{{ __('Based on active pipeline & deals') }}</span>
         </div>
       </div>
 
       <!-- Charts & Visual Breakdowns -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Invoices by Status Breakdown -->
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
           <h2 class="text-base font-bold text-ink-gray-9">{{ __('Invoice Status Breakdown') }}</h2>
           <div class="space-y-3">
             <div v-for="stat in invoiceStatusDistribution" :key="stat.name" class="space-y-1">
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Sales by Inventory Category -->
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
           <h2 class="text-base font-bold text-ink-gray-9">{{ __('Sales by Product / Service Category') }}</h2>
           <div class="space-y-3">
             <div v-for="cat in categoryBreakdown" :key="cat.name" class="space-y-1">
@@ -72,7 +72,7 @@
       </div>
 
       <!-- Inventory Performance & Capital Tied -->
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
         <h2 class="text-base font-bold text-ink-gray-9">{{ __('Inventory Valuation & Capital Breakdown') }}</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div class="bg-surface-gray-1 rounded-xl p-4 border border-outline-gray-1">
@@ -85,7 +85,7 @@
           </div>
           <div class="bg-surface-gray-1 rounded-xl p-4 border border-outline-gray-1">
             <span class="text-xs text-ink-gray-5">{{ __('Potential Gross Margin') }}</span>
-            <div class="text-xl font-bold text-emerald-600 mt-1">
+            <div class="text-xl font-bold text-ink-green-3 mt-1">
               ${{ formatNum(totalInventoryRetail - totalInventoryCost) }}
             </div>
           </div>

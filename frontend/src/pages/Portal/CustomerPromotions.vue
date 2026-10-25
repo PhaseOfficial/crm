@@ -12,11 +12,11 @@
       <div
         v-for="promo in business.promotions"
         :key="promo.id"
-        class="bg-surface-white rounded-xl border border-outline-gray-1 p-6 shadow-sm flex flex-col justify-between hover:border-blue-400 transition-colors"
+        class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm flex flex-col justify-between hover:border-outline-gray-3 transition-colors"
       >
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-surface-purple-2 text-ink-purple-7 border border-outline-purple-2">
               {{ promo.discount_type === 'percentage' ? `${promo.discount_value}% OFF` : `$${promo.discount_value} CREDIT` }}
             </span>
             <span class="text-xs text-ink-gray-4">

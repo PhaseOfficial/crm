@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-surface-gray-2 flex flex-col">
     <!-- Customer Portal Navigation Header -->
-    <header class="bg-surface-white border-b border-outline-gray-1 sticky top-0 z-30">
+    <header class="bg-surface-base border-b border-outline-gray-1 sticky top-0 z-30 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 items-center">
           <!-- Logo & Portal Tag -->
@@ -14,7 +14,7 @@
               />
             </router-link>
             <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-blue-2 text-ink-blue-7"
             >
               {{ __('Client Portal') }}
             </span>
@@ -39,6 +39,16 @@
 
           <!-- Right: Workspace Switch & Account -->
           <div class="flex items-center gap-3">
+            <!-- Theme Toggle -->
+            <button
+              type="button"
+              class="p-2 rounded-full text-ink-gray-6 hover:text-ink-gray-9 hover:bg-surface-gray-2 transition focus:outline-none"
+              :title="currentTheme === 'dark' ? __('Switch to Light Mode') : __('Switch to Dark Mode')"
+              @click="toggleTheme"
+            >
+              <span :class="currentTheme === 'dark' ? 'lucide-sun' : 'lucide-moon'" class="size-4" />
+            </button>
+
             <button
               v-if="business.currentRole !== 'Customer'"
               type="button"
@@ -80,7 +90,7 @@
       </div>
 
       <!-- Mobile drawer links -->
-      <div v-if="mobileMenuOpen" class="md:hidden border-t border-outline-gray-1 px-4 pt-2 pb-3 space-y-1 bg-surface-white">
+      <div v-if="mobileMenuOpen" class="md:hidden border-t border-outline-gray-1 px-4 pt-2 pb-3 space-y-1 bg-surface-base shadow-lg">
         <router-link
           v-for="item in navItems"
           :key="item.to"
@@ -114,7 +124,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-surface-white border-t border-outline-gray-1 py-4 text-center text-xs text-ink-gray-5">
+    <footer class="bg-surface-base border-t border-outline-gray-1 py-4 text-center text-xs text-ink-gray-5">
       <div class="max-w-7xl mx-auto px-4">
         © {{ new Date().getFullYear() }} {{ business.settings.business_name }}. {{ __('Customer Workspace') }}
       </div>
@@ -127,12 +137,17 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBusinessStore } from '@/stores/business'
 import { sessionStore } from '@/stores/session'
-import { Dropdown, Avatar } from 'frappe-ui'
+import { Dropdown, Avatar, useTheme } from 'frappe-ui'
 
 const router = useRouter()
 const business = useBusinessStore()
 const session = sessionStore()
 const mobileMenuOpen = ref(false)
+const { currentTheme, setTheme } = useTheme()
+
+function toggleTheme() {
+  setTheme(currentTheme.value === 'dark' ? 'light' : 'dark')
+}
 
 const navItems = [
   { label: 'Dashboard', to: '/portal' },
@@ -158,6 +173,12 @@ const userMenuOptions = computed(() => {
       onClick: () => router.push({ path: '/dashboard' }),
     })
   }
+
+  options.push({
+    label: currentTheme.value === 'dark' ? 'Light Theme' : 'Dark Theme',
+    icon: currentTheme.value === 'dark' ? 'sun' : 'moon',
+    onClick: () => toggleTheme(),
+  })
 
   options.push({
     label: 'Sign Out',

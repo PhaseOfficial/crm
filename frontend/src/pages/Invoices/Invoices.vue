@@ -20,30 +20,30 @@
     <div class="flex-1 overflow-y-auto p-6 space-y-6">
       <!-- Invoicing KPI Summary Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Total Revenue') }}</span>
           <div class="mt-2 text-2xl font-bold text-ink-gray-9">${{ formatNum(business.totalRevenue) }}</div>
-          <span class="text-xs text-emerald-600 mt-1 block">{{ __('Settled via payment transactions') }}</span>
+          <span class="text-xs text-ink-green-2 mt-1 block">{{ __('Settled via payment transactions') }}</span>
         </div>
 
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Outstanding Balance') }}</span>
-          <div class="mt-2 text-2xl font-bold text-amber-600">${{ formatNum(business.totalOutstanding) }}</div>
-          <span class="text-xs text-ink-gray-4 mt-1 block">{{ __('Pending payment collection') }}</span>
+          <div class="mt-2 text-2xl font-bold text-ink-amber-3">${{ formatNum(business.totalOutstanding) }}</div>
+          <span class="text-xs text-ink-gray-5 mt-1 block">{{ __('Pending payment collection') }}</span>
         </div>
 
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Overdue Invoices') }}</span>
-          <div class="mt-2 text-2xl font-bold" :class="business.overdueInvoicesCount > 0 ? 'text-red-600' : 'text-ink-gray-9'">
+          <div class="mt-2 text-2xl font-bold" :class="business.overdueInvoicesCount > 0 ? 'text-ink-red-3' : 'text-ink-gray-9'">
             {{ business.overdueInvoicesCount }}
           </div>
-          <span class="text-xs text-red-500 mt-1 block">{{ __('Requires follow-up action') }}</span>
+          <span class="text-xs text-ink-red-2 mt-1 block">{{ __('Requires follow-up action') }}</span>
         </div>
 
-        <div class="bg-surface-white rounded-xl border border-outline-gray-1 p-5 shadow-sm">
+        <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 shadow-sm">
           <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-5">{{ __('Paid Invoices') }}</span>
           <div class="mt-2 text-2xl font-bold text-ink-gray-9">{{ business.paidInvoicesCount }}</div>
-          <span class="text-xs text-ink-gray-4 mt-1 block">{{ __('Fully completed invoices') }}</span>
+          <span class="text-xs text-ink-gray-5 mt-1 block">{{ __('Fully completed invoices') }}</span>
         </div>
       </div>
 
@@ -55,7 +55,7 @@
             v-for="st in statusOptions"
             :key="st"
             class="px-3 py-1.5 rounded-md transition-colors"
-            :class="selectedStatus === st ? 'bg-surface-white text-ink-gray-9 font-bold shadow-sm' : 'text-ink-gray-6 hover:text-ink-gray-9'"
+            :class="selectedStatus === st ? 'bg-surface-base text-ink-gray-9 font-bold shadow-sm' : 'text-ink-gray-6 hover:text-ink-gray-9'"
             @click="selectedStatus = st"
           >
             {{ __(st) }}
@@ -74,7 +74,7 @@
       </div>
 
       <!-- Invoices Data Table -->
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
@@ -106,7 +106,7 @@
                 <td class="py-4 px-6 text-ink-gray-6">{{ inv.issue_date }}</td>
                 <td class="py-4 px-6 text-ink-gray-6">{{ inv.due_date }}</td>
                 <td class="py-4 px-6 font-bold text-ink-gray-9">${{ formatNum(inv.total_amount) }}</td>
-                <td class="py-4 px-6 font-bold" :class="inv.balance_due > 0 ? 'text-amber-600' : 'text-ink-gray-6'">
+                <td class="py-4 px-6 font-bold" :class="inv.balance_due > 0 ? 'text-ink-amber-3' : 'text-ink-gray-6'">
                   ${{ formatNum(inv.balance_due) }}
                 </td>
                 <td class="py-4 px-6">
@@ -216,13 +216,13 @@ function formatNum(num) {
 function getStatusClass(status) {
   switch (status) {
     case 'Paid':
-      return 'bg-green-50 text-green-700 border border-green-200'
+      return 'bg-surface-green-2 text-ink-green-7 border border-outline-green-2'
     case 'Overdue':
-      return 'bg-red-50 text-red-700 border border-red-200'
+      return 'bg-surface-red-2 text-ink-red-7 border border-outline-red-2'
     case 'Issued':
-      return 'bg-blue-50 text-blue-700 border border-blue-200'
+      return 'bg-surface-blue-2 text-ink-blue-7 border border-outline-blue-2'
     case 'Partially paid':
-      return 'bg-amber-50 text-amber-700 border border-amber-200'
+      return 'bg-surface-amber-2 text-ink-amber-7 border border-outline-amber-2'
     case 'Draft':
       return 'bg-surface-gray-2 text-ink-gray-7 border border-outline-gray-2'
     case 'Cancelled':

@@ -16,12 +16,12 @@
 
     <div class="flex-1 overflow-y-auto p-6 space-y-6">
       <!-- Low Stock Alert Banner -->
-      <div v-if="business.lowStockItems.length" class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between">
+      <div v-if="business.lowStockItems.length" class="bg-surface-amber-2 border border-outline-amber-2 rounded-xl p-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <span class="lucide-alert-triangle size-5 text-amber-600 shrink-0" />
+          <span class="lucide-alert-triangle size-5 text-ink-amber-7 shrink-0" />
           <div>
-            <h4 class="text-xs font-bold text-amber-900">{{ __('Low Stock Warning') }}</h4>
-            <p class="text-xs text-amber-700 mt-0.5">
+            <h4 class="text-xs font-bold text-ink-amber-7">{{ __('Low Stock Warning') }}</h4>
+            <p class="text-xs text-ink-amber-7 opacity-90 mt-0.5">
               {{ __('The following items are running below reorder threshold: {0}', [business.lowStockItems.map(i => `${i.name} (${i.quantity_in_stock} left)`).join(', ')]) }}
             </p>
           </div>
@@ -34,7 +34,7 @@
         <div class="flex items-center gap-2">
           <select
             v-model="selectedType"
-            class="bg-surface-white border border-outline-gray-2 rounded-lg px-3 py-1.5 text-xs font-medium text-ink-gray-8 focus:outline-none"
+            class="bg-surface-gray-1 border border-outline-gray-2 rounded-lg px-3 py-1.5 text-xs font-medium text-ink-gray-9 focus:outline-none"
           >
             <option value="All">{{ __('All Types (Products & Services)') }}</option>
             <option value="Product">{{ __('Tracked Products Only') }}</option>
@@ -43,7 +43,7 @@
 
           <select
             v-model="selectedCategory"
-            class="bg-surface-white border border-outline-gray-2 rounded-lg px-3 py-1.5 text-xs font-medium text-ink-gray-8 focus:outline-none"
+            class="bg-surface-gray-1 border border-outline-gray-2 rounded-lg px-3 py-1.5 text-xs font-medium text-ink-gray-9 focus:outline-none"
           >
             <option value="All">{{ __('All Categories') }}</option>
             <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
@@ -61,7 +61,7 @@
       </div>
 
       <!-- Inventory Table -->
-      <div class="bg-surface-white rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
@@ -92,7 +92,7 @@
                 <td class="py-4 px-6">
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                    :class="item.type === 'Product' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'"
+                    :class="item.type === 'Product' ? 'bg-surface-blue-2 text-ink-blue-7' : 'bg-surface-purple-2 text-ink-purple-7'"
                   >
                     {{ item.type }}
                   </span>
@@ -105,12 +105,12 @@
                     {{ __('Non-stock / Service') }}
                   </span>
                   <div v-else class="flex items-center gap-2">
-                    <span class="font-bold text-sm" :class="item.quantity_in_stock <= item.low_stock_threshold ? 'text-red-600' : 'text-ink-gray-9'">
+                    <span class="font-bold text-sm" :class="item.quantity_in_stock <= item.low_stock_threshold ? 'text-ink-red-3' : 'text-ink-gray-9'">
                       {{ item.quantity_in_stock }} units
                     </span>
                     <span
                       v-if="item.quantity_in_stock <= item.low_stock_threshold"
-                      class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-red-700"
+                      class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-surface-red-2 text-ink-red-7 border border-outline-red-2"
                     >
                       {{ __('Low Stock') }}
                     </span>
@@ -138,7 +138,7 @@
     <!-- Add / Edit Modal -->
     <Dialog v-model:open="showModal" :size="'md'">
       <template #body>
-        <div class="p-6 bg-surface-white space-y-4">
+        <div class="p-6 bg-surface-base space-y-4">
           <div class="border-b border-outline-gray-1 pb-3 flex justify-between items-center">
             <h2 class="text-lg font-bold text-ink-gray-9">
               {{ editingId ? __('Edit Item') : __('Add Product or Service') }}
