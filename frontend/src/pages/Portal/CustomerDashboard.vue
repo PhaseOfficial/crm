@@ -111,7 +111,7 @@
               <td class="py-4 px-6 font-medium text-ink-gray-9">
                 ${{ formatNum(inv.total_amount) }}
               </td>
-              <td class="py-4 px-6 font-medium" :class="inv.balance_due > 0 ? 'text-amber-600' : 'text-ink-gray-6'">
+              <td class="py-4 px-6 font-medium" :class="inv.balance_due > 0 ? 'text-ink-amber-3' : 'text-ink-gray-6'">
                 ${{ formatNum(inv.balance_due) }}
               </td>
               <td class="py-4 px-6">

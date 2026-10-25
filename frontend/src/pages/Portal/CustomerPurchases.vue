@@ -37,8 +37,8 @@
               <td class="py-4 px-6 text-ink-gray-6">{{ inv.issue_date }}</td>
               <td class="py-4 px-6 text-ink-gray-6">{{ inv.due_date }}</td>
               <td class="py-4 px-6 font-semibold text-ink-gray-9">${{ formatNum(inv.total_amount) }}</td>
-              <td class="py-4 px-6 text-emerald-600 font-medium">${{ formatNum(inv.amount_paid) }}</td>
-              <td class="py-4 px-6 font-semibold" :class="inv.balance_due > 0 ? 'text-amber-600' : 'text-ink-gray-6'">
+              <td class="py-4 px-6 text-ink-green-3 font-semibold">${{ formatNum(inv.amount_paid) }}</td>
+              <td class="py-4 px-6 font-semibold" :class="inv.balance_due > 0 ? 'text-ink-amber-3' : 'text-ink-gray-6'">
                 ${{ formatNum(inv.balance_due) }}
               </td>
               <td class="py-4 px-6">
@@ -143,11 +143,11 @@
                 <span>{{ __('Total:') }}</span>
                 <span>${{ formatNum(selectedInvoice.total_amount) }}</span>
               </div>
-              <div class="flex justify-between text-emerald-600 font-medium">
+              <div class="flex justify-between text-ink-green-3 font-medium">
                 <span>{{ __('Amount Paid:') }}</span>
                 <span>${{ formatNum(selectedInvoice.amount_paid) }}</span>
               </div>
-              <div class="flex justify-between font-bold" :class="selectedInvoice.balance_due > 0 ? 'text-amber-600' : 'text-ink-gray-6'">
+              <div class="flex justify-between font-bold" :class="selectedInvoice.balance_due > 0 ? 'text-ink-amber-3' : 'text-ink-gray-6'">
                 <span>{{ __('Balance Due:') }}</span>
                 <span>${{ formatNum(selectedInvoice.balance_due) }}</span>
               </div>
