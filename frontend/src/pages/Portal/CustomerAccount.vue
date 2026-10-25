@@ -62,12 +62,12 @@
         <div class="space-y-4">
           <div>
             <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Company / Organization') }}</span>
-            <span class="text-base font-bold text-ink-gray-9 mt-0.5 block">{{ clientProfile.company || clientProfile.client_name }}</span>
+            <span class="text-base font-bold text-ink-gray-9 mt-0.5 block">{{ clientProfile.organization || clientProfile.company || clientProfile.client_name || 'Client Account' }}</span>
           </div>
 
           <div>
             <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Primary Contact Representative') }}</span>
-            <span class="font-medium text-ink-gray-9 mt-0.5 block">{{ clientProfile.full_name }}</span>
+            <span class="font-medium text-ink-gray-9 mt-0.5 block">{{ clientProfile.full_name || clientProfile.email }}</span>
           </div>
 
           <div>
@@ -77,20 +77,20 @@
 
           <div>
             <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Phone Number') }}</span>
-            <span class="font-medium text-ink-gray-8 mt-0.5 block">{{ clientProfile.phone || '+1 (555) 789-0123' }}</span>
+            <span class="font-medium text-ink-gray-8 mt-0.5 block">{{ clientProfile.phone || 'Not specified' }}</span>
           </div>
         </div>
 
         <div class="space-y-4">
           <div>
             <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Official Billing Address') }}</span>
-            <p class="font-medium text-ink-gray-9 mt-0.5 whitespace-pre-line">{{ clientProfile.address || '450 Mission Street, Floor 14' }}</p>
-            <p class="text-xs text-ink-gray-6">{{ clientProfile.city || 'San Francisco' }}, {{ clientProfile.state || 'CA' }} {{ clientProfile.zip || '94105' }}</p>
+            <p class="font-medium text-ink-gray-9 mt-0.5 whitespace-pre-line">{{ clientProfile.address || 'Address on file with invoice records' }}</p>
+            <p v-if="clientProfile.city || clientProfile.state" class="text-xs text-ink-gray-6">{{ clientProfile.city }}, {{ clientProfile.state }} {{ clientProfile.zip }}</p>
           </div>
 
           <div>
             <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Tax ID / VAT Registration') }}</span>
-            <span class="font-mono font-medium text-ink-gray-9 mt-0.5 block">{{ clientProfile.tax_id || 'US-882-99120' }}</span>
+            <span class="font-mono font-medium text-ink-gray-9 mt-0.5 block">{{ clientProfile.tax_id || 'Not specified' }}</span>
           </div>
 
           <div>
@@ -313,13 +313,13 @@ const showChangeModal = ref(false)
 const submitting = ref(false)
 
 const clientProfile = computed(() => {
-  return business.currentUser || business.users.find((u) => u.role === 'Customer') || {}
+  return business.currentUser || {}
 })
 
 const customerRequests = computed(() => {
-  const email = clientProfile.value.email || 'client@acme.corp'
+  const email = clientProfile.value.email?.toLowerCase()
   return business.changeRequests.filter(
-    (r) => r.client_email === email || r.client_id === clientProfile.value.id
+    (r) => (email && r.client_email?.toLowerCase() === email) || r.client_id === clientProfile.value.id
   )
 })
 

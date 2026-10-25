@@ -14,38 +14,66 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   first_name TEXT,
   last_name TEXT,
   avatar_url TEXT,
-  role TEXT DEFAULT 'CRM User', -- 'System Manager', 'CRM Manager', 'CRM User'
+  phone TEXT,
+  organization TEXT,
+  role TEXT NOT NULL CHECK (role IN ('Administrator', 'Staff', 'Customer')) DEFAULT 'Customer',
   is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
 -- Trigger to automatically create profile record on Supabase signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
+  user_count INTEGER;
+  assigned_role TEXT;
   raw_name TEXT;
   f_name TEXT;
   l_name TEXT;
 BEGIN
   raw_name := COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1));
   f_name := split_part(raw_name, ' ', 1);
-  l_name := SUBSTRING(raw_name FROM LENGTH(f_name) + 2);
+  l_name := NULLIF(SUBSTRING(raw_name FROM LENGTH(f_name) + 2), '');
 
-  INSERT INTO public.profiles (id, email, full_name, first_name, last_name, avatar_url, role)
-  VALUES (
+  SELECT COUNT(*) INTO user_count FROM public.profiles;
+
+  IF user_count = 0 THEN
+    assigned_role := 'Administrator';
+  ELSE
+    assigned_role := COALESCE(
+      NULLIF(NEW.raw_user_meta_data->>'role', ''),
+      'Customer'
+    );
+    IF assigned_role NOT IN ('Administrator', 'Staff', 'Customer') THEN
+      assigned_role := 'Customer';
+    END IF;
+  END IF;
+
+  INSERT INTO public.profiles (
+    id,
+    email,
+    full_name,
+    first_name,
+    last_name,
+    avatar_url,
+    phone,
+    organization,
+    role
+  ) VALUES (
     NEW.id,
     NEW.email,
     raw_name,
     f_name,
     l_name,
     NEW.raw_user_meta_data->>'avatar_url',
-    COALESCE(NEW.raw_user_meta_data->>'role', 'System Manager')
+    NEW.raw_user_meta_data->>'phone',
+    NEW.raw_user_meta_data->>'organization',
+    assigned_role
   )
-  ON CONFLICT (id) DO UPDATE
-  SET
+  ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
-    full_name = EXCLUDED.full_name,
+    full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
     avatar_url = COALESCE(EXCLUDED.avatar_url, public.profiles.avatar_url),
     updated_at = NOW();
 

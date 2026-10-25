@@ -180,6 +180,13 @@ const showReceiptModal = ref(false)
 const selectedInvoice = ref(null)
 
 const invoices = computed(() => {
+  const currentEmail = business.currentUser?.email?.toLowerCase()
+  if (currentEmail) {
+    const matching = business.invoices.filter(
+      (i) => i.status !== 'Draft' && i.client_email?.toLowerCase() === currentEmail
+    )
+    if (matching.length > 0) return matching
+  }
   return business.invoices.filter((i) => i.status !== 'Draft')
 })
 

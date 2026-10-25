@@ -108,12 +108,57 @@
           </div>
           <TextInput
             v-model="password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="••••••••"
             required
             minlength="6"
             :disabled="loading"
-          />
+          >
+            <template #suffix>
+              <button
+                type="button"
+                class="flex items-center text-ink-gray-5 hover:text-ink-gray-8 transition pr-1 focus:outline-none"
+                :title="showPassword ? __('Hide password') : __('Show password')"
+                @click="showPassword = !showPassword"
+              >
+                <FeatherIcon :name="showPassword ? 'eye-off' : 'eye'" class="size-4" />
+              </button>
+            </template>
+          </TextInput>
+        </div>
+
+        <!-- Confirm Password Field for Sign Up -->
+        <div v-if="authMode === 'signup'">
+          <label class="block text-sm font-medium text-ink-gray-7 mb-1">
+            {{ __('Confirm Password') }}
+          </label>
+          <TextInput
+            v-model="confirmPassword"
+            :type="showConfirmPassword ? 'text' : 'password'"
+            placeholder="••••••••"
+            required
+            minlength="6"
+            :disabled="loading"
+          >
+            <template #suffix>
+              <button
+                type="button"
+                class="flex items-center text-ink-gray-5 hover:text-ink-gray-8 transition pr-1 focus:outline-none"
+                :title="showConfirmPassword ? __('Hide password') : __('Show password')"
+                @click="showConfirmPassword = !showConfirmPassword"
+              >
+                <FeatherIcon :name="showConfirmPassword ? 'eye-off' : 'eye'" class="size-4" />
+              </button>
+            </template>
+          </TextInput>
+          <p
+            v-if="confirmPassword"
+            class="text-xs mt-1.5 flex items-center gap-1.5 font-medium"
+            :class="password === confirmPassword ? 'text-ink-green-6' : 'text-ink-red-6'"
+          >
+            <FeatherIcon :name="password === confirmPassword ? 'check' : 'alert-circle'" class="size-3.5" />
+            {{ password === confirmPassword ? __('Passwords match') : __('Passwords do not match') }}
+          </p>
         </div>
 
         <Button
@@ -150,7 +195,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { sessionStore } from '@/stores/session'
 import { useBusinessStore } from '@/stores/business'
-import { Button, TextInput, ErrorMessage, Alert } from 'frappe-ui'
+import { Button, TextInput, ErrorMessage, Alert, FeatherIcon } from 'frappe-ui'
 
 const router = useRouter()
 const session = sessionStore()
@@ -160,6 +205,9 @@ const authMode = ref('signin') // 'signin' | 'signup' | 'forgot'
 const fullName = ref('')
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 const infoMessage = ref('')
@@ -168,12 +216,21 @@ function setMode(mode) {
   authMode.value = mode
   errorMessage.value = ''
   infoMessage.value = ''
+  confirmPassword.value = ''
+  showPassword.value = false
+  showConfirmPassword.value = false
 }
 
 async function handleSubmit() {
-  loading.value = true
   errorMessage.value = ''
   infoMessage.value = ''
+
+  if (authMode.value === 'signup' && password.value !== confirmPassword.value) {
+    errorMessage.value = 'Passwords do not match. Please make sure both passwords match.'
+    return
+  }
+
+  loading.value = true
 
   try {
     if (authMode.value === 'forgot') {
@@ -191,12 +248,16 @@ async function handleSubmit() {
         password: password.value,
         data: {
           full_name: fullName.value.trim(),
+          role: 'Customer',
         },
       })
 
       if (error) throw error
 
       if (data?.session) {
+        if (data.user?.id) {
+          await session.fetchProfile(data.user.id)
+        }
         business.resolveUserRole(email.value.trim())
         redirectByRole()
       } else {
@@ -204,11 +265,14 @@ async function handleSubmit() {
         authMode.value = 'signin'
       }
     } else {
-      await session.login.submit({
+      const res = await session.login.submit({
         email: email.value.trim(),
         password: password.value,
       })
 
+      if (res?.user?.id) {
+        await session.fetchProfile(res.user.id)
+      }
       business.resolveUserRole(email.value.trim())
       redirectByRole()
     }
@@ -221,7 +285,8 @@ async function handleSubmit() {
 }
 
 function redirectByRole() {
-  if (business.currentRole === 'Customer') {
+  const role = session.userRole || business.currentRole
+  if (role === 'Customer') {
     router.replace('/portal')
   } else {
     router.replace('/dashboard')

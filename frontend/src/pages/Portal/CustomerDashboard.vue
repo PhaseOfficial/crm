@@ -143,6 +143,13 @@ import { Button } from 'frappe-ui'
 const business = useBusinessStore()
 
 const customerInvoices = computed(() => {
+  const currentEmail = business.currentUser?.email?.toLowerCase()
+  if (currentEmail) {
+    const matching = business.invoices.filter(
+      (inv) => inv.status !== 'Draft' && inv.client_email?.toLowerCase() === currentEmail
+    )
+    if (matching.length > 0) return matching
+  }
   return business.invoices.filter((inv) => inv.status !== 'Draft')
 })
 

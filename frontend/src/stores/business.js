@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { supabase } from '@/utils/supabase'
+import { sessionStore } from './session'
 import {
   mockBusinessSettings,
   mockInventory,
@@ -51,13 +53,93 @@ export const useBusinessStore = defineStore('business-store', () => {
   }
 
   const currentUser = computed(() => {
+    try {
+      const session = sessionStore()
+      if (session.isLoggedIn && (session.userProfile || session.currentUser)) {
+        const email = session.currentUser?.email || session.user
+        const meta = session.currentUser?.user_metadata || {}
+        const profile = session.userProfile || {}
+        const fallbackName = typeof email === 'string' ? email.split('@')[0] : 'User'
+        return {
+          id: session.currentUser?.id || profile.id || 'current-user',
+          email: email,
+          full_name: profile.full_name || meta.full_name || fallbackName,
+          first_name: profile.first_name || meta.first_name || fallbackName,
+          last_name: profile.last_name || meta.last_name || '',
+          role: profile.role || meta.role || currentRole.value,
+          avatar: profile.avatar_url || meta.avatar_url || null,
+          phone: profile.phone || meta.phone || '',
+          organization: profile.organization || meta.organization || 'Client Account',
+          company: profile.organization || meta.organization || 'Client Account',
+          address: profile.address || '',
+          city: profile.city || '',
+          state: profile.state || '',
+          zip: profile.zip || '',
+          tax_id: profile.tax_id || '',
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
     return users.value.find((u) => u.role === currentRole.value) || users.value[0]
   })
 
   const isAdmin = computed(() => currentRole.value === 'Administrator')
 
+  async function fetchUsersFromSupabase() {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: true })
+
+      if (!error && data && data.length > 0) {
+        users.value = data.map((p) => ({
+          id: p.id,
+          email: p.email,
+          full_name: p.full_name || p.email.split('@')[0],
+          role: p.role || 'Customer',
+          avatar: p.avatar_url,
+        }))
+        saveStorage('users', users.value)
+      }
+    } catch (err) {
+      console.warn('[Business] Could not fetch profiles from Supabase:', err)
+    }
+  }
+
+  async function updateUserRole(userId, newRole) {
+    const u = users.value.find((item) => item.id === userId)
+    if (u) {
+      u.role = newRole
+      saveStorage('users', users.value)
+    }
+    try {
+      await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+    } catch (err) {
+      console.warn('[Business] Could not update profile role in Supabase:', err)
+    }
+  }
+
   function resolveUserRole(email) {
-    if (!email) return 'Administrator'
+    if (!email) return currentRole.value || 'Administrator'
+
+    // Check if sessionStore has a confirmed Supabase profile role
+    try {
+      const session = sessionStore()
+      if (session.userProfile?.role) {
+        setRole(session.userProfile.role)
+        return session.userProfile.role
+      }
+      if (session.currentUser?.user_metadata?.role) {
+        setRole(session.currentUser.user_metadata.role)
+        return session.currentUser.user_metadata.role
+      }
+    } catch (e) {
+      // ignore
+    }
+
     const found = users.value.find((u) => u.email?.toLowerCase() === email.toLowerCase())
     if (found?.role) {
       setRole(found.role)
@@ -270,25 +352,26 @@ export const useBusinessStore = defineStore('business-store', () => {
   })
 
   function submitChangeRequest({ requested_details, reason }) {
-    const activeClient = currentUser.value || users.value.find((u) => u.role === 'Customer') || {}
+    const activeClient = currentUser.value || {}
+    const fallbackName = activeClient.email ? activeClient.email.split('@')[0] : 'Client'
     const newReq = {
       id: `cr-${Date.now()}`,
       client_id: activeClient.id || 'usr-client-01',
-      client_name: activeClient.full_name || 'Sarah Connor',
-      client_email: activeClient.email || 'client@acme.corp',
-      organization: activeClient.company || activeClient.client_name || 'Acme Global Corp',
+      client_name: activeClient.full_name || fallbackName,
+      client_email: activeClient.email || '',
+      organization: activeClient.organization || activeClient.company || 'Client Organization',
       requested_date: new Date().toISOString().split('T')[0],
       status: 'Pending',
       reason: reason || 'Customer requested information updates.',
       current_details: {
-        full_name: activeClient.full_name || 'Sarah Connor',
-        phone: activeClient.phone || '+1 (555) 789-0123',
-        company: activeClient.company || activeClient.client_name || 'Acme Global Corp',
-        address: activeClient.address || '450 Mission Street, Floor 14',
-        city: activeClient.city || 'San Francisco',
-        state: activeClient.state || 'CA',
-        zip: activeClient.zip || '94105',
-        tax_id: activeClient.tax_id || 'US-882-99120',
+        full_name: activeClient.full_name || fallbackName,
+        phone: activeClient.phone || '',
+        company: activeClient.organization || activeClient.company || 'Client Organization',
+        address: activeClient.address || '',
+        city: activeClient.city || '',
+        state: activeClient.state || '',
+        zip: activeClient.zip || '',
+        tax_id: activeClient.tax_id || '',
       },
       requested_details: { ...requested_details },
       review_notes: '',
@@ -386,6 +469,8 @@ export const useBusinessStore = defineStore('business-store', () => {
     reminders,
     promotions,
     users,
+    fetchUsersFromSupabase,
+    updateUserRole,
     changeRequests,
     pendingChangeRequests,
     currentRole,

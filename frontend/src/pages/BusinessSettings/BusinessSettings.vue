@@ -163,6 +163,7 @@
                   <select
                     v-model="user.role"
                     class="bg-surface-gray-1 border border-outline-gray-2 rounded px-2 py-1 text-xs font-semibold text-ink-gray-9 focus:outline-none"
+                    @change="onRoleChanged(user)"
                   >
                     <option value="Administrator">{{ __('Administrator') }}</option>
                     <option value="Staff">{{ __('Staff') }}</option>
@@ -420,7 +421,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useBusinessStore } from '@/stores/business'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { FormControl, Button, Avatar, Dialog } from 'frappe-ui'
@@ -432,6 +433,14 @@ const showInvite = ref(false)
 const showRejectDialog = ref(false)
 const selectedReqToReject = ref(null)
 const rejectionReason = ref('')
+
+onMounted(() => {
+  business.fetchUsersFromSupabase()
+})
+
+function onRoleChanged(user) {
+  business.updateUserRole(user.id, user.role)
+}
 
 function approveRequest(id) {
   business.approveChangeRequest(id, business.currentUser?.full_name || 'Admin')
