@@ -39,62 +39,118 @@
       </span>
     </div>
 
-    <!-- Official Account Record Card -->
+    <!-- Official Account Details Card -->
     <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-gray-1 pb-4">
         <div>
           <h2 class="text-base font-bold text-ink-gray-9 flex items-center gap-2">
             <span class="lucide-building size-5 text-ink-gray-7" />
-            {{ __('Official Company & Contact Record') }}
+            {{ __('Company & Contact Information') }}
           </h2>
-          <span class="text-xs text-ink-gray-4">{{ __('Associated with active contracts, invoices and billing statements') }}</span>
+          <span class="text-xs text-ink-gray-4">{{ __('Official organization details, verified tax registration, and billing address') }}</span>
         </div>
 
-        <Button
-          variant="solid"
-          iconLeft="file-edit"
-          :label="__('Request Detail Change')"
-          @click="openChangeModal"
-        />
+        <div class="flex items-center gap-3">
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-gray-2 border border-outline-gray-1 text-xs">
+            <span class="text-ink-gray-5">{{ __('Profile Verification:') }}</span>
+            <span class="font-bold text-ink-blue-7">{{ business.profileCompletion.percentage }}%</span>
+          </div>
+
+          <Button
+            variant="solid"
+            iconLeft="file-edit"
+            :label="__('Request Detail Change')"
+            @click="openChangeModal"
+          />
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+        <!-- Left: Legal Entity & Compliance -->
         <div class="space-y-4">
           <div>
-            <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Company / Organization') }}</span>
-            <span class="text-base font-bold text-ink-gray-9 mt-0.5 block">{{ clientProfile.organization || clientProfile.company || clientProfile.client_name || 'Client Account' }}</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Company / Organization Name') }}</span>
+            <span class="text-base font-bold text-ink-gray-9 mt-0.5 block">
+              {{ customer.company_name || customer.legal_name || customer.organization || 'Client Account' }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Company Reg. Number (CRN)') }}</span>
+              <span class="font-mono text-ink-gray-8 mt-0.5 block text-xs">
+                {{ customer.company_registration_number || __('Not specified') }}
+              </span>
+            </div>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Tax ID / TIN') }}</span>
+              <span class="font-mono text-ink-gray-8 mt-0.5 block text-xs">
+                {{ customer.tin || customer.tax_id || __('Not specified') }}
+              </span>
+            </div>
           </div>
 
           <div>
             <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Primary Contact Representative') }}</span>
-            <span class="font-medium text-ink-gray-9 mt-0.5 block">{{ clientProfile.full_name || clientProfile.email }}</span>
+            <span class="font-medium text-ink-gray-9 mt-0.5 block">
+              {{ customer.salutation ? customer.salutation + ' ' : '' }}{{ customer.first_name ? (customer.first_name + ' ' + (customer.last_name || '')) : (customer.full_name || customer.primary_email) }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Gender') }}</span>
+              <span class="text-ink-gray-8 mt-0.5 block text-xs">
+                {{ customer.gender || __('Not specified') }}
+              </span>
+            </div>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('National ID / Passport') }}</span>
+              <span class="font-mono text-ink-gray-8 mt-0.5 block text-xs">
+                {{ customer.national_id_number || __('Not specified') }}
+              </span>
+            </div>
           </div>
 
           <div>
             <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Registered Billing Email') }}</span>
-            <span class="font-mono text-ink-gray-8 mt-0.5 block">{{ clientProfile.email }}</span>
-          </div>
-
-          <div>
-            <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Phone Number') }}</span>
-            <span class="font-medium text-ink-gray-8 mt-0.5 block">{{ clientProfile.phone || 'Not specified' }}</span>
+            <span class="font-mono text-ink-gray-8 mt-0.5 block">{{ customer.billing_email || customer.primary_email || clientProfile.email }}</span>
           </div>
         </div>
 
+        <!-- Right: Address & Commercial Defaults -->
         <div class="space-y-4">
           <div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Phone & Mobile Contact') }}</span>
+            <span class="font-medium text-ink-gray-8 mt-0.5 block">{{ customer.phone || customer.mobile_no || 'Not specified' }}</span>
+          </div>
+
+          <div>
             <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Official Billing Address') }}</span>
-            <p class="font-medium text-ink-gray-9 mt-0.5 whitespace-pre-line">{{ clientProfile.address || 'Address on file with invoice records' }}</p>
-            <p v-if="clientProfile.city || clientProfile.state" class="text-xs text-ink-gray-6">{{ clientProfile.city }}, {{ clientProfile.state }} {{ clientProfile.zip }}</p>
+            <p class="font-medium text-ink-gray-9 mt-0.5 whitespace-pre-line">
+              {{ customer.billing_address_line1 || customer.address || 'Address on file with invoice records' }}
+            </p>
+            <p v-if="customer.billing_city || customer.billing_state_province || customer.city" class="text-xs text-ink-gray-6 mt-0.5">
+              {{ customer.billing_city || customer.city }}, {{ customer.billing_state_province || customer.state }} {{ customer.billing_postal_code || customer.zip }}
+            </p>
+            <p v-if="customer.billing_country" class="text-xs text-ink-gray-5">
+              {{ customer.billing_country }}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 pt-1">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Payment Terms') }}</span>
+              <span class="text-xs font-semibold text-ink-gray-9 mt-0.5 block">{{ customer.default_payment_terms || 'Net 30' }}</span>
+            </div>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Account Currency') }}</span>
+              <span class="text-xs font-semibold text-ink-gray-9 mt-0.5 block">{{ customer.default_currency || 'USD' }}</span>
+            </div>
           </div>
 
           <div>
-            <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Tax ID / VAT Registration') }}</span>
-            <span class="font-mono font-medium text-ink-gray-9 mt-0.5 block">{{ clientProfile.tax_id || 'Not specified' }}</span>
-          </div>
-
-          <div>
-            <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Record Verification Status') }}</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-ink-gray-4 block">{{ __('Verification & Status') }}</span>
             <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-green-7 bg-surface-green-2 px-2.5 py-1 rounded-md border border-outline-green-2 mt-1">
               <span class="lucide-check-circle size-3.5" />
               {{ __('Verified & Active') }}
@@ -134,24 +190,36 @@
               <td class="py-4 px-6">
                 <div class="space-y-1 text-xs">
                   <div v-if="req.requested_details.company !== req.current_details.company">
-                    <span class="font-semibold text-ink-gray-5">Company:</span>
+                    <span class="font-semibold text-ink-gray-5">{{ __('Company:') }}</span>
                     <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.company }}</span>
                   </div>
+                  <div v-if="req.requested_details.company_registration_number !== req.current_details.company_registration_number">
+                    <span class="font-semibold text-ink-gray-5">{{ __('Reg Number:') }}</span>
+                    <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.company_registration_number }}</span>
+                  </div>
+                  <div v-if="req.requested_details.tax_id !== req.current_details.tax_id">
+                    <span class="font-semibold text-ink-gray-5">{{ __('TIN / Tax ID:') }}</span>
+                    <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.tax_id }}</span>
+                  </div>
                   <div v-if="req.requested_details.full_name !== req.current_details.full_name">
-                    <span class="font-semibold text-ink-gray-5">Contact:</span>
+                    <span class="font-semibold text-ink-gray-5">{{ __('Contact:') }}</span>
                     <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.full_name }}</span>
                   </div>
+                  <div v-if="req.requested_details.national_id_number !== req.current_details.national_id_number">
+                    <span class="font-semibold text-ink-gray-5">{{ __('National ID:') }}</span>
+                    <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.national_id_number }}</span>
+                  </div>
+                  <div v-if="req.requested_details.gender !== req.current_details.gender">
+                    <span class="font-semibold text-ink-gray-5">{{ __('Gender:') }}</span>
+                    <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.gender }}</span>
+                  </div>
                   <div v-if="req.requested_details.phone !== req.current_details.phone">
-                    <span class="font-semibold text-ink-gray-5">Phone:</span>
+                    <span class="font-semibold text-ink-gray-5">{{ __('Phone:') }}</span>
                     <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.phone }}</span>
                   </div>
                   <div v-if="req.requested_details.address !== req.current_details.address">
-                    <span class="font-semibold text-ink-gray-5">Address:</span>
+                    <span class="font-semibold text-ink-gray-5">{{ __('Address:') }}</span>
                     <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.address }}</span>
-                  </div>
-                  <div v-if="req.requested_details.tax_id !== req.current_details.tax_id">
-                    <span class="font-semibold text-ink-gray-5">Tax ID:</span>
-                    <span class="text-ink-gray-9 ml-1 font-medium">{{ req.requested_details.tax_id }}</span>
                   </div>
                 </div>
               </td>
@@ -225,13 +293,25 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormControl
                 v-model="changeForm.company"
-                :label="__('Company / Organization Name')"
+                :label="__('Company / Organization Legal Name')"
                 type="text"
                 required
               />
               <FormControl
+                v-model="changeForm.company_registration_number"
+                :label="__('Company Registration Number (CRN)')"
+                placeholder="e.g. CRN-881920-CA"
+                type="text"
+              />
+              <FormControl
+                v-model="changeForm.tax_id"
+                :label="__('Tax ID / TIN / VAT')"
+                placeholder="e.g. US-882-99120"
+                type="text"
+              />
+              <FormControl
                 v-model="changeForm.full_name"
-                :label="__('Contact Full Name')"
+                :label="__('Contact Representative Name')"
                 type="text"
                 required
               />
@@ -242,9 +322,27 @@
                 required
               />
               <FormControl
-                v-model="changeForm.tax_id"
-                :label="__('Tax ID / VAT Registration')"
+                v-model="changeForm.national_id_number"
+                :label="__('National ID / Passport Number')"
                 type="text"
+              />
+              <FormControl
+                v-model="changeForm.gender"
+                :label="__('Gender')"
+                type="select"
+                :options="[
+                  { label: 'Select Gender', value: '' },
+                  { label: 'Male', value: 'Male' },
+                  { label: 'Female', value: 'Female' },
+                  { label: 'Non-Binary', value: 'Non-Binary' },
+                  { label: 'Other', value: 'Other' },
+                  { label: 'Prefer Not to Say', value: 'Prefer Not to Say' },
+                ]"
+              />
+              <FormControl
+                v-model="changeForm.date_of_birth"
+                :label="__('Date of Birth')"
+                type="date"
               />
             </div>
 
@@ -304,13 +402,19 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useBusinessStore } from '@/stores/business'
 import { FormControl, Button, Dialog } from 'frappe-ui'
 
+const route = useRoute()
 const business = useBusinessStore()
 const showChangeModal = ref(false)
 const submitting = ref(false)
+
+const customer = computed(() => {
+  return business.currentCustomerRecord || {}
+})
 
 const clientProfile = computed(() => {
   return business.currentUser || {}
@@ -319,7 +423,7 @@ const clientProfile = computed(() => {
 const customerRequests = computed(() => {
   const email = clientProfile.value.email?.toLowerCase()
   return business.changeRequests.filter(
-    (r) => (email && r.client_email?.toLowerCase() === email) || r.client_id === clientProfile.value.id
+    (r) => (email && r.client_email?.toLowerCase() === email) || r.client_id === clientProfile.value.id || r.customer_id === clientProfile.value.id
   )
 })
 
@@ -335,8 +439,12 @@ const notifications = reactive({
 
 const changeForm = reactive({
   company: '',
+  company_registration_number: '',
   full_name: '',
   phone: '',
+  national_id_number: '',
+  gender: '',
+  date_of_birth: '',
   address: '',
   city: '',
   state: '',
@@ -346,38 +454,53 @@ const changeForm = reactive({
 })
 
 function openChangeModal() {
-  changeForm.company = clientProfile.value.company || clientProfile.value.client_name || ''
-  changeForm.full_name = clientProfile.value.full_name || ''
-  changeForm.phone = clientProfile.value.phone || '+1 (555) 789-0123'
-  changeForm.address = clientProfile.value.address || '450 Mission Street, Floor 14'
-  changeForm.city = clientProfile.value.city || 'San Francisco'
-  changeForm.state = clientProfile.value.state || 'CA'
-  changeForm.zip = clientProfile.value.zip || '94105'
-  changeForm.tax_id = clientProfile.value.tax_id || 'US-882-99120'
+  const c = customer.value || {}
+  const u = clientProfile.value || {}
+
+  changeForm.company = c.company_name || u.organization || u.company || ''
+  changeForm.company_registration_number = c.company_registration_number || ''
+  changeForm.full_name = c.first_name ? (c.first_name + ' ' + (c.last_name || '')) : (u.full_name || '')
+  changeForm.phone = c.phone || u.phone || '+1 (555) 789-0123'
+  changeForm.national_id_number = c.national_id_number || ''
+  changeForm.gender = c.gender || ''
+  changeForm.date_of_birth = c.date_of_birth || ''
+  changeForm.address = c.billing_address_line1 || u.address || '450 Mission Street, Floor 14'
+  changeForm.city = c.billing_city || u.city || 'San Francisco'
+  changeForm.state = c.billing_state_province || u.state || 'CA'
+  changeForm.zip = c.billing_postal_code || u.zip || '94105'
+  changeForm.tax_id = c.tin || c.tax_id || u.tax_id || 'US-882-99120'
   changeForm.reason = ''
   showChangeModal.value = true
 }
 
-function submitRequest() {
+async function submitRequest() {
   if (!changeForm.reason.trim()) return
 
   submitting.value = true
-  setTimeout(() => {
-    business.submitChangeRequest({
-      requested_details: {
-        company: changeForm.company,
-        full_name: changeForm.full_name,
-        phone: changeForm.phone,
-        address: changeForm.address,
-        city: changeForm.city,
-        state: changeForm.state,
-        zip: changeForm.zip,
-        tax_id: changeForm.tax_id,
-      },
-      reason: changeForm.reason.trim(),
-    })
-    submitting.value = false
-    showChangeModal.value = false
-  }, 400)
+  await business.submitChangeRequest({
+    requested_details: {
+      company: changeForm.company,
+      company_registration_number: changeForm.company_registration_number,
+      full_name: changeForm.full_name,
+      phone: changeForm.phone,
+      national_id_number: changeForm.national_id_number,
+      gender: changeForm.gender,
+      date_of_birth: changeForm.date_of_birth,
+      address: changeForm.address,
+      city: changeForm.city,
+      state: changeForm.state,
+      zip: changeForm.zip,
+      tax_id: changeForm.tax_id,
+    },
+    reason: changeForm.reason.trim(),
+  })
+  submitting.value = false
+  showChangeModal.value = false
 }
+
+onMounted(() => {
+  if (route.query.request_change === 'true') {
+    openChangeModal()
+  }
+})
 </script>

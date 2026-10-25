@@ -81,15 +81,26 @@ const routes = [
     props: true,
   },
   {
-    alias: '/organizations',
+    alias: ['/organizations', '/organizations/view/:viewType?', '/clients/view/:viewType?'],
+    path: '/clients',
+    name: 'Clients',
+    component: () => import('@/pages/Clients.vue'),
+  },
+  {
     path: '/organizations/view/:viewType?',
     name: 'Organizations',
-    component: () => import('@/pages/Organizations.vue'),
+    redirect: '/clients',
   },
   {
     path: '/organizations/:organizationId',
     name: 'Organization',
     component: () => import(`@/pages/${handleMobileView('Organization')}.vue`),
+    props: true,
+  },
+  {
+    path: '/clients/:clientId',
+    name: 'Client',
+    component: () => import('@/pages/Client.vue'),
     props: true,
   },
   {

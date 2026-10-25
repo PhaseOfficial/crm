@@ -93,6 +93,14 @@
                 >
                   <span class="truncate text-sm">{{ __(link.label) }}</span>
                 </Tooltip>
+                <template #suffix>
+                  <Badge
+                    v-if="link.key === 'Clients' && business.pendingChangeRequests.length"
+                    variant="subtle"
+                    theme="amber"
+                    :label="business.pendingChangeRequests.length"
+                  />
+                </template>
               </SidebarItem>
             </nav>
           </CollapsibleSection>
@@ -282,9 +290,9 @@ const links = [
     to: 'Contacts',
   },
   {
-    label: 'Organizations',
+    label: 'Clients',
     icon: OrganizationsIcon,
-    to: 'Organizations',
+    to: 'Clients',
   },
   {
     label: 'Notes',
@@ -427,6 +435,7 @@ function getIcon(routeName, icon) {
     case 'Contacts':
       return ContactsIcon
     case 'Organizations':
+    case 'Clients':
       return OrganizationsIcon
     case 'Notes':
       return NoteIcon

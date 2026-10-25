@@ -38,7 +38,21 @@
           </nav>
 
           <!-- Right: Workspace Switch & Account -->
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Guide & Walkthrough Button -->
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-ink-blue-7 bg-surface-blue-2 border border-outline-blue-2 hover:bg-surface-blue-3 transition focus:outline-none"
+              :title="__('Explore Getting Started Guide')"
+              @click="showGuideModal = true"
+            >
+              <span class="lucide-compass size-4 shrink-0" />
+              <span class="hidden sm:inline">{{ __('Guide') }}</span>
+              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-surface-blue-3 text-ink-blue-8">
+                {{ business.completedOnboardingStepsCount }}/{{ business.customerOnboardingSteps.length }}
+              </span>
+            </button>
+
             <!-- Theme Toggle -->
             <button
               type="button"
@@ -123,6 +137,16 @@
       <slot />
     </main>
 
+    <!-- Modals for Onboarding & Profile Completion -->
+    <ProfileCompletionModal
+      v-model="showProfileModal"
+      @open-change-modal="handleOpenProfileChange"
+    />
+    <CustomerGuideModal
+      v-model="showGuideModal"
+      @open-profile-change="handleOpenProfileChange"
+    />
+
     <!-- Footer -->
     <footer class="bg-surface-base border-t border-outline-gray-1 py-4 text-center text-xs text-ink-gray-5">
       <div class="max-w-7xl mx-auto px-4">
@@ -138,12 +162,20 @@ import { useRouter } from 'vue-router'
 import { useBusinessStore } from '@/stores/business'
 import { sessionStore } from '@/stores/session'
 import { Dropdown, Avatar, useTheme } from 'frappe-ui'
+import ProfileCompletionModal from '@/components/Modals/ProfileCompletionModal.vue'
+import CustomerGuideModal from '@/components/Modals/CustomerGuideModal.vue'
 
 const router = useRouter()
 const business = useBusinessStore()
 const session = sessionStore()
 const mobileMenuOpen = ref(false)
+const showGuideModal = ref(false)
+const showProfileModal = ref(false)
 const { currentTheme, setTheme } = useTheme()
+
+function handleOpenProfileChange() {
+  router.push('/portal/account?request_change=true')
+}
 
 function toggleTheme() {
   setTheme(currentTheme.value === 'dark' ? 'light' : 'dark')
