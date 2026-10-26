@@ -200,9 +200,9 @@
                 v-if="inv.balance_due > 0 && inv.status !== 'Cancelled'"
                 size="sm"
                 variant="solid"
-                theme="amber"
                 iconLeft="credit-card"
                 :label="__('Record Payment')"
+                class="!bg-amber-600 hover:!bg-amber-500 active:!bg-amber-700 !text-white dark:!bg-amber-500 dark:hover:!bg-amber-400 dark:!text-gray-950 font-bold shadow-sm"
                 @click="openPaymentModal(inv)"
               />
               <Button

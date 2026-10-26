@@ -701,6 +701,79 @@ export const useBusinessStore = defineStore('business-store', () => {
         saveStorage('customers', customers.value)
         return data
       }
+
+      // If not in customers, also check organizations table
+      const { data: org, error: orgErr } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', customerId)
+        .maybeSingle()
+
+      if (!orgErr && org) {
+        let contacts = []
+        try {
+          const { data: ctData } = await supabase
+            .from('contacts')
+            .select('*')
+            .eq('organization_id', org.id)
+          if (ctData) contacts = ctData
+        } catch {}
+
+        const primaryContact = contacts.find((ct) => ct.is_primary) || contacts[0]
+        const clientObj = {
+          id: org.id,
+          customer_type: 'Business',
+          status: 'Active',
+          lifecycle_stage: 'Active',
+          company_name: org.name || org.company_name || 'Organization',
+          legal_structure: org.legal_structure || 'Corporation',
+          company_registration_number: org.company_registration_number || '',
+          tin: org.tin || org.tax_id || '',
+          vat_number: org.vat_number || '',
+          industry: org.industry || 'Technology',
+          website: org.website || '',
+          first_name: primaryContact?.first_name || '',
+          last_name: primaryContact?.last_name || '',
+          job_title: primaryContact?.job_title || 'Primary Contact',
+          primary_email: primaryContact?.email || org.email || '',
+          billing_email: primaryContact?.email || org.email || '',
+          phone: org.phone || primaryContact?.phone || '',
+          mobile_no: primaryContact?.mobile_no || '',
+          national_id_number: '',
+          billing_address_line1: org.address || org.billing_address_line1 || '',
+          billing_city: org.city || org.billing_city || '',
+          billing_state_province: org.state || org.billing_state_province || '',
+          billing_postal_code: org.postal_code || org.zip || '',
+          billing_country: org.country || 'United States',
+          default_currency: org.currency || 'USD',
+          default_payment_terms: org.payment_terms || 'Net 30',
+          credit_limit: Number(org.credit_limit) || 25000.0,
+          is_profile_complete: true,
+          contacts: contacts.length > 0 ? contacts : [
+            {
+              id: `ct-${org.id}`,
+              first_name: 'Primary',
+              last_name: 'Contact',
+              name: 'Primary Contact',
+              email: org.email || '',
+              phone: org.phone || '',
+              role: 'Representative',
+              is_primary: true,
+            }
+          ],
+          created_at: org.created_at,
+          updated_at: org.updated_at,
+        }
+
+        const idx = customers.value.findIndex((c) => c.id === clientObj.id)
+        if (idx !== -1) {
+          customers.value[idx] = { ...customers.value[idx], ...clientObj }
+        } else {
+          customers.value.unshift(clientObj)
+        }
+        saveStorage('customers', customers.value)
+        return clientObj
+      }
     } catch (err) {
       console.warn('[Business] Could not fetch customer from Supabase:', err)
     }

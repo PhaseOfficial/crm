@@ -1,36 +1,60 @@
 <template>
-  <div class="flex flex-col flex-1 h-full w-full overflow-hidden bg-surface-gray-2">
+  <div class="flex flex-col flex-1 h-full w-full overflow-hidden">
+    <!-- Header -->
     <LayoutHeader>
       <template #left-header>
         <div class="flex items-center gap-2">
-          <h1 class="text-xl font-bold text-ink-gray-9">{{ __('Business Settings') }}</h1>
-          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-surface-purple-2 text-ink-purple-7 border border-outline-purple-2">
+          <h1 class="text-base sm:text-xl font-bold text-ink-gray-9">{{ __('Business Settings') }}</h1>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-surface-purple-2 text-ink-purple-7 dark:text-ink-purple-4 border border-outline-purple-2">
             {{ __('Administrator Only') }}
           </span>
         </div>
       </template>
       <template #right-header>
         <div class="flex items-center gap-2">
-          <span v-if="savedSuccess" class="text-xs text-ink-green-3 font-semibold">
-            {{ __('Settings saved!') }}
-          </span>
-          <Button variant="solid" :label="__('Save Settings')" :loading="saving" @click="save" />
+          <transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="opacity-0 translate-y-1"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+          >
+            <span
+              v-if="savedSuccess"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-green-2 text-ink-green-7 dark:text-ink-green-4 border border-outline-green-2 text-xs font-semibold shadow-xs"
+            >
+              <span class="lucide-check size-3.5" />
+              {{ __('Settings saved!') }}
+            </span>
+          </transition>
+          <Button
+            variant="solid"
+            iconLeft="check"
+            :label="isMobileView ? '' : __('Save Settings')"
+            :tooltip="__('Save Settings')"
+            :loading="saving"
+            @click="save"
+          />
         </div>
       </template>
     </LayoutHeader>
 
-    <div class="flex-1 overflow-y-auto p-6 space-y-6 max-w-5xl">
+    <!-- Canvas with Safe Mobile Bottom Nav Clearance -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-6 space-y-6 max-w-5xl w-full mx-auto">
       <!-- Company Information Card -->
-      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
-        <h2 class="text-base font-bold text-ink-gray-9 flex items-center gap-2">
-          <span class="lucide-building-2 size-5 text-blue-500" />
-          {{ __('Company & Contact Information') }}
-        </h2>
-        <p class="text-xs text-ink-gray-5">
-          {{ __('These details will appear on all outgoing customer invoices and receipts.') }}
-        </p>
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 sm:p-6 shadow-sm space-y-4">
+        <div>
+          <h2 class="text-base font-bold text-ink-gray-9 flex items-center gap-2">
+            <span class="lucide-building-2 size-4 text-ink-gray-5 dark:text-ink-gray-4" />
+            {{ __('Company & Contact Information') }}
+          </h2>
+          <p class="text-xs text-ink-gray-7 dark:text-ink-gray-6 mt-0.5">
+            {{ __('These details will appear on all outgoing customer invoices and receipts.') }}
+          </p>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormControl
             v-model="form.business_name"
             :label="__('Company Legal Name')"
@@ -66,11 +90,16 @@
       </div>
 
       <!-- Invoicing & Currency Rules -->
-      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
-        <h2 class="text-base font-bold text-ink-gray-9 flex items-center gap-2">
-          <span class="lucide-receipt size-5 text-emerald-500" />
-          {{ __('Invoice Numbering & Financial Defaults') }}
-        </h2>
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 sm:p-6 shadow-sm space-y-4">
+        <div>
+          <h2 class="text-base font-bold text-ink-gray-9 flex items-center gap-2">
+            <span class="lucide-receipt size-4 text-ink-gray-5 dark:text-ink-gray-4" />
+            {{ __('Invoice Numbering & Financial Defaults') }}
+          </h2>
+          <p class="text-xs text-ink-gray-7 dark:text-ink-gray-6 mt-0.5">
+            {{ __('Configure sequential document prefixes, default commercial terms, and statutory tax rates.') }}
+          </p>
+        </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FormControl
@@ -128,40 +157,40 @@
       </div>
 
       <!-- Staff Management & Role Permissions -->
-      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-6 shadow-sm space-y-4">
+      <div class="bg-surface-base rounded-xl border border-outline-gray-1 p-5 sm:p-6 shadow-sm space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 class="text-base font-bold text-ink-gray-9 flex items-center gap-2">
-              <span class="lucide-users size-5 text-purple-500" />
+              <span class="lucide-users size-4 text-ink-gray-5 dark:text-ink-gray-4" />
               {{ __('Staff Accounts & Role Assignments') }}
             </h2>
-            <p class="text-xs text-ink-gray-5 mt-0.5">
+            <p class="text-xs text-ink-gray-7 dark:text-ink-gray-6 mt-0.5">
               {{ __('Manage internal CRM staff members and system administrator permissions.') }}
             </p>
           </div>
-          <div class="flex items-center gap-2">
-            <!-- Role Filter Pills -->
-            <div class="flex items-center bg-surface-gray-2 p-0.5 rounded-lg border border-outline-gray-2 text-xs">
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Role Filter Tabs (Design System Elevated Pattern) -->
+            <div class="flex items-center bg-surface-gray-2 dark:bg-surface-gray-1 p-1 rounded-lg text-xs font-medium">
               <button
                 type="button"
-                class="px-2.5 py-1 font-semibold rounded-md transition-colors"
-                :class="selectedRoleFilter === 'Staff' ? 'bg-surface-base text-ink-gray-9 shadow-xs font-bold' : 'text-ink-gray-5 hover:text-ink-gray-9'"
+                class="px-2.5 py-1 rounded-md transition-colors"
+                :class="selectedRoleFilter === 'Staff' ? 'bg-surface-base dark:bg-surface-gray-3 text-ink-gray-9 font-bold shadow-sm' : 'text-ink-gray-7 dark:text-ink-gray-6 hover:text-ink-gray-9'"
                 @click="selectedRoleFilter = 'Staff'"
               >
                 {{ __('Staff') }} ({{ staffCount }})
               </button>
               <button
                 type="button"
-                class="px-2.5 py-1 font-semibold rounded-md transition-colors"
-                :class="selectedRoleFilter === 'All' ? 'bg-surface-base text-ink-gray-9 shadow-xs font-bold' : 'text-ink-gray-5 hover:text-ink-gray-9'"
+                class="px-2.5 py-1 rounded-md transition-colors"
+                :class="selectedRoleFilter === 'All' ? 'bg-surface-base dark:bg-surface-gray-3 text-ink-gray-9 font-bold shadow-sm' : 'text-ink-gray-7 dark:text-ink-gray-6 hover:text-ink-gray-9'"
                 @click="selectedRoleFilter = 'All'"
               >
                 {{ __('All Team') }} ({{ totalInternalCount }})
               </button>
               <button
                 type="button"
-                class="px-2.5 py-1 font-semibold rounded-md transition-colors"
-                :class="selectedRoleFilter === 'Administrator' ? 'bg-surface-base text-ink-gray-9 shadow-xs font-bold' : 'text-ink-gray-5 hover:text-ink-gray-9'"
+                class="px-2.5 py-1 rounded-md transition-colors"
+                :class="selectedRoleFilter === 'Administrator' ? 'bg-surface-base dark:bg-surface-gray-3 text-ink-gray-9 font-bold shadow-sm' : 'text-ink-gray-7 dark:text-ink-gray-6 hover:text-ink-gray-9'"
                 @click="selectedRoleFilter = 'Administrator'"
               >
                 {{ __('Admins') }} ({{ adminCount }})
@@ -171,10 +200,11 @@
           </div>
         </div>
 
-        <div class="border border-outline-gray-1 rounded-lg overflow-hidden overflow-x-auto">
+        <!-- Desktop Staff Table (>= 768px) -->
+        <div class="hidden md:block border border-outline-gray-1 rounded-lg overflow-hidden overflow-x-auto">
           <table class="w-full text-left text-sm border-collapse">
-            <thead class="bg-surface-gray-1 text-xs font-semibold text-ink-gray-6 uppercase tracking-wider">
-              <tr>
+            <thead>
+              <tr class="bg-surface-gray-1 border-b border-outline-gray-1 text-xs font-semibold text-ink-gray-7 dark:text-ink-gray-6 uppercase tracking-wider">
                 <th class="py-3 px-4">{{ __('Staff Member') }}</th>
                 <th class="py-3 px-4">{{ __('Email') }}</th>
                 <th class="py-3 px-4">{{ __('Assigned Role') }}</th>
@@ -182,16 +212,18 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-outline-gray-1">
-              <tr v-for="user in filteredStaffUsers" :key="user.id" class="hover:bg-surface-gray-1">
-                <td class="py-3 px-4 flex items-center gap-2.5">
-                  <Avatar size="sm" :label="user.full_name" :image="user.avatar" />
-                  <span class="font-medium text-ink-gray-9">{{ user.full_name }}</span>
+              <tr v-for="user in filteredStaffUsers" :key="user.id" class="hover:bg-surface-gray-1 transition-colors">
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-2.5">
+                    <Avatar size="sm" :label="user.full_name" :image="user.avatar" />
+                    <span class="font-semibold text-ink-gray-9">{{ user.full_name }}</span>
+                  </div>
                 </td>
-                <td class="py-3 px-4 text-ink-gray-6">{{ user.email }}</td>
+                <td class="py-3 px-4 text-ink-gray-7 dark:text-ink-gray-6">{{ user.email }}</td>
                 <td class="py-3 px-4">
                   <select
                     v-model="user.role"
-                    class="bg-surface-gray-1 border border-outline-gray-2 rounded px-2 py-1 text-xs font-semibold text-ink-gray-9 focus:outline-none"
+                    class="bg-surface-base dark:bg-surface-gray-2 border border-outline-gray-2 rounded-md px-2.5 py-1 text-xs font-semibold text-ink-gray-9 focus:outline-none focus:ring-1 focus:ring-outline-gray-3"
                     @change="onRoleChanged(user)"
                   >
                     <option value="Staff">{{ __('Staff') }}</option>
@@ -200,11 +232,11 @@
                 </td>
                 <td class="py-3 px-4 text-right text-xs">
                   <span
-                    class="px-2 py-0.5 rounded-full font-medium"
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border"
                     :class="
                       user.role === 'Administrator'
-                        ? 'bg-surface-purple-2 text-ink-purple-7'
-                        : 'bg-surface-green-2 text-ink-green-7'
+                        ? 'bg-surface-purple-2 text-ink-purple-7 dark:text-ink-purple-4 border-outline-purple-2'
+                        : 'bg-surface-blue-2 text-ink-blue-7 dark:text-ink-blue-4 border-outline-blue-2'
                     "
                   >
                     {{ user.role === 'Administrator' ? __('Full System Access (Admin)') : __('CRM Staff Access (/dashboard)') }}
@@ -212,28 +244,73 @@
                 </td>
               </tr>
               <tr v-if="!filteredStaffUsers.length">
-                <td colspan="4" class="py-8 text-center text-xs text-ink-gray-4">
-                  {{ __('No staff members found.') }}
+                <td colspan="4" class="py-10 text-center text-xs text-ink-gray-6 dark:text-ink-gray-5">
+                  {{ __('No staff members found matching this filter.') }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile Adaptive Cards View (< 768px) -->
+        <div class="md:hidden border border-outline-gray-1 rounded-lg divide-y divide-outline-gray-1 overflow-hidden">
+          <div
+            v-for="user in filteredStaffUsers"
+            :key="user.id"
+            class="p-4 bg-surface-base hover:bg-surface-gray-1 transition-colors space-y-3"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <Avatar size="md" :label="user.full_name" :image="user.avatar" />
+                <div class="min-w-0">
+                  <div class="font-semibold text-ink-gray-9 text-sm truncate">{{ user.full_name }}</div>
+                  <div class="text-xs text-ink-gray-7 dark:text-ink-gray-6 truncate">{{ user.email }}</div>
+                </div>
+              </div>
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0"
+                :class="
+                  user.role === 'Administrator'
+                    ? 'bg-surface-purple-2 text-ink-purple-7 dark:text-ink-purple-4 border-outline-purple-2'
+                    : 'bg-surface-blue-2 text-ink-blue-7 dark:text-ink-blue-4 border-outline-blue-2'
+                "
+              >
+                {{ user.role }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 pt-2 border-t border-outline-gray-1/60 text-xs">
+              <span class="text-ink-gray-6 dark:text-ink-gray-5 font-medium">{{ __('Role Assignment:') }}</span>
+              <select
+                v-model="user.role"
+                class="bg-surface-base dark:bg-surface-gray-2 border border-outline-gray-2 rounded-md px-2.5 py-1 text-xs font-semibold text-ink-gray-9 focus:outline-none"
+                @change="onRoleChanged(user)"
+              >
+                <option value="Staff">{{ __('Staff') }}</option>
+                <option value="Administrator">{{ __('Administrator') }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="!filteredStaffUsers.length" class="p-8 text-center text-xs text-ink-gray-6 dark:text-ink-gray-5">
+            {{ __('No staff members found matching this filter.') }}
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Invite / Add Staff Modal -->
+    <!-- Invite / Add Staff Modal (Archetype B Alignment) -->
     <Dialog v-model:open="showInvite" :size="'md'">
       <template #body>
-        <div class="p-6 bg-surface-base space-y-4">
+        <div class="p-6 bg-surface-base text-ink-gray-9 space-y-4">
           <div class="flex items-center justify-between border-b border-outline-gray-1 pb-3">
             <h2 class="text-lg font-bold text-ink-gray-9 flex items-center gap-2">
-              <span class="lucide-user-plus size-5 text-ink-gray-7" />
+              <span class="lucide-user-plus size-5 text-ink-gray-7 dark:text-ink-gray-5" />
               {{ __('Invite Staff Member') }}
             </h2>
             <span
               v-if="existingClientAccount"
-              class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-amber-2 text-ink-amber-7 border border-outline-amber-2"
+              class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-amber-2 text-ink-amber-8 dark:text-amber-300 border border-outline-amber-2 dark:border-amber-800/60"
             >
               {{ __('Client Account Found') }}
             </span>
@@ -242,29 +319,29 @@
           <!-- Existing Client Upgrade Detection Banner -->
           <div
             v-if="existingClientAccount"
-            class="p-3.5 bg-surface-amber-2/70 border border-outline-amber-2 rounded-xl text-xs space-y-2 animate-fadeIn"
+            class="p-3.5 bg-surface-amber-2 dark:bg-amber-950/50 border border-outline-amber-2 dark:border-amber-800/60 rounded-xl text-xs space-y-2 animate-fadeIn"
           >
-            <div class="flex items-center gap-2 font-bold text-ink-amber-8">
-              <span class="lucide-arrow-up-circle size-4 text-amber-600" />
+            <div class="flex items-center gap-2 font-bold text-ink-amber-8 dark:text-amber-300">
+              <span class="lucide-arrow-up-circle size-4 text-amber-600 dark:text-amber-400" />
               {{ __('Existing Client Account Detected') }}
             </div>
-            <p class="text-ink-gray-8 leading-relaxed">
+            <p class="text-ink-gray-8 dark:text-ink-gray-7 leading-relaxed">
               <strong>{{ existingClientAccount.full_name || existingClientAccount.company }}</strong> ({{ existingClientAccount.email }})
-              is registered as a client. Adding them here will upgrade their account to an internal <strong>{{ __(newMember.role) }}</strong>, granting them full CRM access.
+              is registered as a client organization. Adding them here will upgrade their account to an internal <strong>{{ __(newMember.role) }}</strong>, granting them full CRM access.
             </p>
-            <div class="flex items-center gap-2 text-[11px] text-ink-amber-7 font-medium pt-0.5">
-              <span class="lucide-check-circle size-3.5 text-amber-600" />
+            <div class="flex items-center gap-2 text-[11px] text-ink-amber-8 dark:text-amber-300 font-medium pt-0.5">
+              <span class="lucide-check-circle size-3.5 text-amber-600 dark:text-amber-400" />
               {{ __('Their client portal record will be converted automatically.') }}
             </div>
           </div>
 
           <!-- Optional Quick-Select from Registered Clients -->
           <div v-if="clientAccountsList.length && !existingClientAccount" class="space-y-1">
-            <label class="text-xs font-semibold text-ink-gray-6">
+            <label class="text-xs font-semibold text-ink-gray-7 dark:text-ink-gray-6">
               {{ __('Or select an existing client to upgrade:') }}
             </label>
             <select
-              class="w-full bg-surface-gray-1 border border-outline-gray-2 rounded-lg px-3 py-2 text-xs text-ink-gray-8 focus:outline-none"
+              class="w-full bg-surface-base dark:bg-surface-gray-2 border border-outline-gray-2 rounded-lg px-3 py-2 text-xs text-ink-gray-9 focus:outline-none focus:ring-1 focus:ring-outline-gray-3"
               @change="selectClientToUpgrade($event.target.value)"
             >
               <option value="">{{ __('— Choose a registered client —') }}</option>
@@ -306,10 +383,10 @@
             <Button variant="subtle" :label="__('Cancel')" @click="closeInviteModal" />
             <Button
               variant="solid"
-              :theme="existingClientAccount ? 'amber' : 'gray'"
               :iconLeft="existingClientAccount ? 'arrow-up-right' : 'user-plus'"
               :label="existingClientAccount ? __('Upgrade to {0}', [__(newMember.role)]) : __('Add Member')"
               :disabled="!newMember.email || !newMember.full_name"
+              :class="existingClientAccount ? '!bg-amber-600 hover:!bg-amber-500 active:!bg-amber-700 !text-white dark:!bg-amber-500 dark:hover:!bg-amber-400 dark:!text-gray-950 font-bold shadow-sm' : ''"
               @click="addTeamMember"
             />
           </div>
@@ -323,6 +400,7 @@
 import { reactive, ref, computed, watch, onMounted } from 'vue'
 import { useBusinessStore } from '@/stores/business'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import { isMobileView } from '@/composables/settings'
 import { FormControl, Button, Avatar, Dialog } from 'frappe-ui'
 
 const business = useBusinessStore()

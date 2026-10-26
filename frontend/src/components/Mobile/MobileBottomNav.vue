@@ -9,7 +9,7 @@
       :key="item.key"
       type="button"
       class="relative flex flex-1 flex-col items-center justify-center py-1 px-1 transition-colors min-h-[48px] focus:outline-none"
-      :class="isItemActive(item) ? 'text-ink-blue-7 dark:text-ink-blue-3 font-semibold' : 'text-ink-gray-5 hover:text-ink-gray-8'"
+      :class="isItemActive(item) ? 'text-ink-blue-7 dark:text-ink-blue-3 font-semibold' : 'text-ink-gray-6 dark:text-ink-gray-4 hover:text-ink-gray-9'"
       @click="handleNavigate(item)"
     >
       <!-- Active Top Accent Pill -->
@@ -38,7 +38,7 @@
     <button
       type="button"
       class="relative flex flex-1 flex-col items-center justify-center py-1 px-1 transition-colors min-h-[48px] focus:outline-none"
-      :class="isMoreActive ? 'text-ink-blue-7 dark:text-ink-blue-3 font-semibold' : 'text-ink-gray-5 hover:text-ink-gray-8'"
+      :class="isMoreActive ? 'text-ink-blue-7 dark:text-ink-blue-3 font-semibold' : 'text-ink-gray-6 dark:text-ink-gray-4 hover:text-ink-gray-9'"
       @click="handleOpenMore"
     >
       <span
