@@ -9,9 +9,10 @@
       </div>
     </div>
 
-    <!-- Invoices List -->
+    <!-- Invoices List & Mobile Adaptive Cards -->
     <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
-      <div class="overflow-x-auto">
+      <!-- Desktop Table (>= 768px) -->
+      <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left border-collapse text-sm">
           <thead>
             <tr class="bg-surface-gray-1 border-b border-outline-gray-1 text-xs font-semibold text-ink-gray-6 uppercase tracking-wider">
@@ -61,6 +62,64 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Adaptive Cards View (< 768px) -->
+      <div class="md:hidden divide-y divide-outline-gray-1">
+        <div
+          v-for="inv in invoices"
+          :key="inv.id"
+          class="p-4 hover:bg-surface-gray-1 transition-colors space-y-3 cursor-pointer"
+          @click="openReceipt(inv)"
+        >
+          <!-- Top: Invoice Number + Status Badge -->
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-mono font-bold text-ink-gray-9 text-sm">{{ inv.invoice_number }}</span>
+            <span
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium"
+              :class="getStatusClass(inv.status)"
+            >
+              {{ __(inv.status) }}
+            </span>
+          </div>
+
+          <!-- Dates & Financials Grid -->
+          <div class="grid grid-cols-2 gap-2 text-xs bg-surface-gray-1/60 p-2.5 rounded-lg">
+            <div>
+              <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Due Date') }}</span>
+              <span class="font-medium text-ink-gray-8">{{ inv.due_date }}</span>
+              <span class="text-[10px] text-ink-gray-4 block mt-0.5">Issued: {{ inv.issue_date }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Balance Due') }}</span>
+              <span
+                class="font-bold text-sm block"
+                :class="inv.balance_due > 0 ? 'text-ink-amber-3' : 'text-ink-gray-6'"
+              >
+                ${{ formatNum(inv.balance_due) }}
+              </span>
+              <span class="text-[10px] text-ink-green-3">Paid: ${{ formatNum(inv.amount_paid) }}</span>
+            </div>
+          </div>
+
+          <!-- Bottom: View Receipt Button -->
+          <div class="pt-1 flex items-center justify-end" @click.stop>
+            <Button
+              size="sm"
+              variant="outline"
+              iconLeft="file-text"
+              :label="__('View Receipt / Invoice')"
+              class="w-full sm:w-auto"
+              @click="openReceipt(inv)"
+            />
+          </div>
+        </div>
+
+        <div v-if="!invoices.length" class="py-12 text-center text-ink-gray-4">
+          <span class="lucide-receipt size-8 text-ink-gray-4 mx-auto block mb-2" />
+          <p class="text-base font-semibold text-ink-gray-7">{{ __('No purchases or invoices found') }}</p>
+          <p class="text-xs mt-1">{{ __('Invoices issued to your account will appear here.') }}</p>
+        </div>
       </div>
     </div>
 

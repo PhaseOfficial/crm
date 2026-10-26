@@ -226,6 +226,7 @@ import {
   activeSettingsPage,
   mobileSidebarOpened,
 } from '@/composables/settings'
+import { recordNavClick } from '@/composables/navFrequency'
 import { showChangePasswordModal } from '@/composables/modals'
 import { useBroadcast } from '@/composables/useBroadcast.js'
 import { call, Sidebar, SidebarItem, SidebarLabel, Tooltip } from 'frappe-ui'
@@ -482,6 +483,7 @@ function selectItem(event, key) {
     return
   }
   activeItem.value = key
+  recordNavClick(key, 'staff')
   // Selecting the row for the route already open leaves the URL unchanged, so
   // the drawer's navigation watcher never fires. Close it here too.
   if (props.mobile) {

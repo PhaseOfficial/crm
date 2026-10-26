@@ -44,7 +44,8 @@
           <span class="text-xs text-ink-gray-5">{{ __('Automated notices sent via verified company email') }}</span>
         </div>
 
-        <div class="overflow-x-auto">
+        <!-- Desktop Table (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="bg-surface-gray-1 border-b border-outline-gray-1 text-xs font-semibold text-ink-gray-6 uppercase tracking-wider">
@@ -97,6 +98,64 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Adaptive Cards View (< 768px) -->
+        <div class="md:hidden divide-y divide-outline-gray-1">
+          <div
+            v-for="rem in business.reminders"
+            :key="rem.id"
+            class="p-4 hover:bg-surface-gray-1 transition-colors space-y-3"
+          >
+            <!-- Top: Invoice Number + Delivery Status -->
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono font-bold text-ink-gray-9 text-sm">{{ rem.invoice_number }}</span>
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium"
+                :class="rem.delivery_status === 'Delivered' ? 'bg-surface-green-2 text-ink-green-7 border border-outline-green-2' : 'bg-surface-blue-2 text-ink-blue-7 border border-outline-blue-2'"
+              >
+                {{ rem.delivery_status }}
+              </span>
+            </div>
+
+            <!-- Client & Email -->
+            <div>
+              <div class="font-semibold text-ink-gray-9 text-sm">{{ rem.client_name }}</div>
+              <div class="text-xs text-ink-gray-5">{{ rem.client_email }}</div>
+            </div>
+
+            <!-- Details Grid: Due Date, Balance, Rule -->
+            <div class="grid grid-cols-2 gap-2 text-xs bg-surface-gray-1/60 p-2.5 rounded-lg">
+              <div>
+                <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Due Date') }}</span>
+                <span class="font-medium text-ink-gray-8">{{ rem.due_date }}</span>
+                <span class="text-[10px] text-ink-gray-4 block mt-0.5">{{ rem.reminder_type }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Balance Due') }}</span>
+                <span class="font-bold text-sm" :class="rem.status === 'Overdue' ? 'text-ink-red-3' : 'text-ink-gray-9'">
+                  ${{ formatNum(rem.balance_due) }}
+                </span>
+                <span class="text-[10px] text-ink-gray-5 block mt-0.5">Last: {{ rem.last_sent_date || __('Never') }}</span>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="flex items-center justify-end pt-1 border-t border-outline-gray-1/40">
+              <Button
+                size="sm"
+                variant="outline"
+                iconLeft="send"
+                :label="__('Send Now')"
+                @click="triggerReminder(rem.id)"
+              />
+            </div>
+          </div>
+
+          <div v-if="!business.reminders.length" class="py-12 text-center text-ink-gray-4">
+            <span class="lucide-bell size-8 text-ink-gray-4 mx-auto block mb-2" />
+            <p class="text-base font-semibold text-ink-gray-7">{{ __('No active reminders') }}</p>
+          </div>
         </div>
       </div>
     </div>

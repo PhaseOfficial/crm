@@ -2,17 +2,22 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
 import { sessionStore } from './session'
-import {
-  mockBusinessSettings,
-  mockInventory,
-  mockInvoices,
-  mockTransactions,
-  mockPaymentReminders,
-  mockPromotions,
-  mockUsers,
-  mockCustomers,
-  initialChangeRequests,
-} from '@/data/mockBusinessData'
+const defaultSettings = {
+  business_name: '',
+  business_email: '',
+  business_phone: '',
+  business_address: '',
+  tax_id: '',
+  currency: 'USD',
+  currency_symbol: '$',
+  invoice_prefix: 'INV-2026-',
+  next_invoice_number: 1001,
+  default_payment_terms: 30,
+  tax_rate: 0.0,
+  late_fee_percentage: 0.0,
+  logo_url: '',
+  notes_template: 'Thank you for your business.',
+}
 
 export const useBusinessStore = defineStore('business-store', () => {
   // Helper to load or initialize from localStorage
@@ -33,16 +38,32 @@ export const useBusinessStore = defineStore('business-store', () => {
     }
   }
 
-  // Reactive state
-  const settings = ref(loadStorage('settings', mockBusinessSettings))
-  const inventory = ref(loadStorage('inventory', mockInventory))
-  const invoices = ref(loadStorage('invoices', mockInvoices))
-  const transactions = ref(loadStorage('transactions', mockTransactions))
-  const reminders = ref(loadStorage('reminders', mockPaymentReminders))
-  const promotions = ref(loadStorage('promotions', mockPromotions))
-  const users = ref(loadStorage('users', mockUsers))
-  const customers = ref(loadStorage('customers', mockCustomers))
-  const changeRequests = ref(loadStorage('change_requests', initialChangeRequests))
+  // Purge any legacy mock entries from local storage
+  const MOCK_IDS = new Set([
+    'usr-admin-01', 'usr-staff-01', 'usr-staff-02', 'usr-staff-03', 'usr-client-01',
+    'usr-client-02', 'usr-client-03', 'cust-b2b-01', 'cust-b2b-02', 'cust-b2b-03',
+    'cust-b2b-04', 'cust-b2b-05', 'cust-b2b-06', 'cr-1001',
+    'inv-001', 'inv-002', 'inv-003', 'inv-004', 'inv-005', 'inv-006', 'inv-007',
+    'prod-001', 'prod-002', 'prod-003', 'prod-004', 'prod-005', 'prod-006',
+  ])
+
+  function cleanStoredList(key) {
+    const list = loadStorage(key, [])
+    const cleaned = Array.isArray(list) ? list.filter((item) => !MOCK_IDS.has(item?.id)) : []
+    saveStorage(key, cleaned)
+    return cleaned
+  }
+
+  // Reactive state - strictly real backend data
+  const settings = ref(loadStorage('settings', defaultSettings))
+  const inventory = ref(cleanStoredList('inventory'))
+  const invoices = ref(cleanStoredList('invoices'))
+  const transactions = ref(cleanStoredList('transactions'))
+  const reminders = ref(cleanStoredList('reminders'))
+  const promotions = ref(cleanStoredList('promotions'))
+  const users = ref(cleanStoredList('users'))
+  const customers = ref(cleanStoredList('customers'))
+  const changeRequests = ref(cleanStoredList('change_requests'))
 
   // Role: 'Administrator' | 'Staff' | 'Customer'
   const currentRole = ref(localStorage.getItem('crestara_current_role') || 'Administrator')
@@ -96,13 +117,16 @@ export const useBusinessStore = defineStore('business-store', () => {
         .select('*')
         .order('created_at', { ascending: true })
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         users.value = data.map((p) => ({
           id: p.id,
           email: p.email,
           full_name: p.full_name || p.email.split('@')[0],
-          role: p.role || 'Customer',
+          role: p.role || 'Staff',
           avatar: p.avatar_url,
+          phone: p.phone || '',
+          organization: p.organization || '',
+          created_at: p.created_at,
         }))
         saveStorage('users', users.value)
       }
@@ -649,10 +673,8 @@ export const useBusinessStore = defineStore('business-store', () => {
         })
       }
 
-      if (combined.length > 0) {
-        customers.value = combined
-        saveStorage('customers', customers.value)
-      }
+      customers.value = combined
+      saveStorage('customers', customers.value)
     } catch (err) {
       console.warn('[Business] Could not fetch clients from Supabase:', err)
     } finally {
@@ -692,7 +714,7 @@ export const useBusinessStore = defineStore('business-store', () => {
         .select('*')
         .order('requested_at', { ascending: false })
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         changeRequests.value = data.map((r) => ({
           id: r.id,
           customer_id: r.customer_id,
@@ -1135,6 +1157,15 @@ export const useBusinessStore = defineStore('business-store', () => {
       (p) => p.track_stock && p.quantity_in_stock <= (p.low_stock_threshold || 5),
     )
   })
+
+  // Auto-fetch real backend data from Supabase
+  try {
+    fetchUsersFromSupabase()
+    fetchClientsFromSupabase()
+    fetchChangeRequestsFromSupabase()
+  } catch (e) {
+    // ignore
+  }
 
   return {
     settings,

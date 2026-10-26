@@ -12,7 +12,7 @@
       </template>
       <template #right-header>
         <router-link to="/invoices/new">
-          <Button variant="solid" :label="__('Create Invoice')" iconLeft="plus" />
+          <Button variant="solid" :label="isMobileView ? '' : __('Create Invoice')" iconLeft="plus" />
         </router-link>
       </template>
     </LayoutHeader>
@@ -73,9 +73,10 @@
         </div>
       </div>
 
-      <!-- Invoices Data Table -->
+      <!-- Invoices Data Table & Mobile Adaptive Cards -->
       <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
+        <!-- Desktop Table (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="bg-surface-gray-1 border-b border-outline-gray-1 text-xs font-semibold text-ink-gray-6 uppercase tracking-wider">
@@ -145,6 +146,81 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile Adaptive Cards View (< 768px) -->
+        <div class="md:hidden divide-y divide-outline-gray-1">
+          <div
+            v-for="inv in filteredInvoices"
+            :key="inv.id"
+            class="p-4 hover:bg-surface-gray-1 transition-colors cursor-pointer space-y-3"
+            @click="goToDetail(inv.id)"
+          >
+            <!-- Top: Invoice Number + Status Badge + Chevron -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="font-mono font-bold text-ink-gray-9 text-sm">{{ inv.invoice_number }}</span>
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium"
+                  :class="getStatusClass(inv.status)"
+                >
+                  {{ __(inv.status) }}
+                </span>
+              </div>
+              <span class="lucide-chevron-right size-4 text-ink-gray-4" />
+            </div>
+
+            <!-- Client & Contact Info -->
+            <div>
+              <div class="font-semibold text-ink-gray-9 text-sm">{{ inv.client_name }}</div>
+              <div v-if="inv.contact_name" class="text-xs text-ink-gray-5">{{ inv.contact_name }}</div>
+            </div>
+
+            <!-- Details Grid: Dates & Amounts -->
+            <div class="grid grid-cols-2 gap-2 text-xs bg-surface-gray-1/60 p-2.5 rounded-lg">
+              <div>
+                <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Due Date') }}</span>
+                <span class="font-medium text-ink-gray-8">{{ inv.due_date }}</span>
+                <span class="text-[10px] text-ink-gray-4 block mt-0.5">Issued: {{ inv.issue_date }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Amount Due') }}</span>
+                <span
+                  class="font-bold text-sm block"
+                  :class="inv.balance_due > 0 ? 'text-ink-amber-3' : 'text-ink-gray-6'"
+                >
+                  ${{ formatNum(inv.balance_due) }}
+                </span>
+                <span class="text-[10px] text-ink-gray-5">Total: ${{ formatNum(inv.total_amount) }}</span>
+              </div>
+            </div>
+
+            <!-- Mobile Quick Actions -->
+            <div class="flex items-center justify-end gap-2 pt-1 border-t border-outline-gray-1/40" @click.stop>
+              <Button
+                v-if="inv.balance_due > 0 && inv.status !== 'Cancelled'"
+                size="sm"
+                variant="solid"
+                theme="amber"
+                iconLeft="credit-card"
+                :label="__('Record Payment')"
+                @click="openPaymentModal(inv)"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                iconRight="arrow-right"
+                :label="__('View')"
+                @click="goToDetail(inv.id)"
+              />
+            </div>
+          </div>
+
+          <div v-if="!filteredInvoices.length" class="py-12 text-center text-ink-gray-4">
+            <span class="lucide-receipt size-8 text-ink-gray-4 mx-auto block mb-2" />
+            <p class="text-base font-semibold text-ink-gray-7">{{ __('No invoices found') }}</p>
+            <p class="text-xs mt-1">{{ __('Try adjusting your filter or create a new invoice.') }}</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -162,6 +238,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBusinessStore } from '@/stores/business'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import { isMobileView } from '@/composables/settings'
 import RecordPaymentModal from '@/components/Invoices/RecordPaymentModal.vue'
 import { Button, TextInput } from 'frappe-ui'
 

@@ -42,9 +42,10 @@
         </div>
       </div>
 
-      <!-- Transactions Ledger Table -->
+      <!-- Transactions Ledger Table & Mobile Adaptive Cards -->
       <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
+        <!-- Desktop Table (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="bg-surface-gray-1 border-b border-outline-gray-1 text-xs font-semibold text-ink-gray-6 uppercase tracking-wider">
@@ -103,6 +104,61 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Adaptive Cards View (< 768px) -->
+        <div class="md:hidden divide-y divide-outline-gray-1">
+          <div
+            v-for="tx in filteredTransactions"
+            :key="tx.id"
+            class="p-4 hover:bg-surface-gray-1 transition-colors space-y-3"
+          >
+            <!-- Top: Ref + Status Pill -->
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono font-bold text-ink-gray-9 text-xs">{{ tx.transaction_ref }}</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-surface-green-2 text-ink-green-7 border border-outline-green-2">
+                {{ __(tx.status) }}
+              </span>
+            </div>
+
+            <!-- Client & Linked Invoice -->
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="font-semibold text-ink-gray-9 text-sm">{{ tx.client_name }}</div>
+                <div class="text-xs text-ink-gray-5 mt-0.5">
+                  {{ __('Invoice:') }}
+                  <router-link :to="`/invoices/${tx.invoice_id}`" class="text-ink-blue-6 hover:underline font-medium">
+                    {{ tx.invoice_number }}
+                  </router-link>
+                </div>
+              </div>
+
+              <div class="text-right">
+                <span class="font-bold text-sm text-ink-green-3 block">
+                  +${{ formatNum(tx.amount) }}
+                </span>
+                <span class="text-[10px] text-ink-gray-4">{{ tx.payment_method }}</span>
+              </div>
+            </div>
+
+            <!-- Footer: Date & View Receipt Button -->
+            <div class="flex items-center justify-between pt-1 border-t border-outline-gray-1/40 text-xs text-ink-gray-5">
+              <span>{{ tx.payment_date }}</span>
+              <Button
+                size="sm"
+                variant="outline"
+                iconLeft="file-text"
+                :label="__('View Receipt')"
+                @click="viewReceipt(tx)"
+              />
+            </div>
+          </div>
+
+          <div v-if="!filteredTransactions.length" class="py-12 text-center text-ink-gray-4">
+            <span class="lucide-credit-card size-8 text-ink-gray-4 mx-auto block mb-2" />
+            <p class="text-base font-semibold text-ink-gray-7">{{ __('No transactions found') }}</p>
+            <p class="text-xs mt-1">{{ __('Payment transactions will be listed here once recorded.') }}</p>
+          </div>
         </div>
       </div>
     </div>

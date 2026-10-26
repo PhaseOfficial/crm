@@ -1,79 +1,54 @@
 <template>
-  <div class="flex flex-col flex-1 h-full overflow-hidden bg-surface-gray-2">
-    <!-- Top Layout Header -->
+  <div class="flex flex-col h-full overflow-hidden">
+    <!-- Header -->
     <LayoutHeader>
       <template #left-header>
         <div class="flex items-center gap-2">
-          <div class="size-8 rounded-lg bg-surface-blue-2 border border-outline-blue-2 flex items-center justify-center text-ink-blue-7">
-            <span class="lucide-building size-4" />
-          </div>
-          <div>
-            <h1 class="text-lg font-bold text-ink-gray-9 leading-none">
-              {{ __('Clients') }}
-            </h1>
-            <span class="text-xs text-ink-gray-5">
-              {{ __('Organizations, associated contact people, and portal verification requests') }}
-            </span>
-          </div>
+          <h1 class="text-xl font-bold text-ink-gray-9">{{ __('Clients') }}</h1>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-surface-gray-2 text-ink-gray-6 font-semibold">
+            {{ filteredClients.length }}
+          </span>
         </div>
       </template>
-
       <template #right-header>
-        <div class="flex items-center gap-2">
-          <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-base border border-outline-gray-1 text-[11px] text-ink-gray-6 shadow-xs">
-            <span class="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span class="font-medium">{{ __('Supabase Connected') }}</span>
-          </div>
-          <Button
-            variant="subtle"
-            iconLeft="refresh-cw"
-            :loading="business.isFetchingClients"
-            :label="__('Sync')"
-            @click="refreshSupabaseData"
-          />
+        <div class="flex items-center gap-1.5 sm:gap-2">
           <Button
             v-if="business.pendingChangeRequests.length"
             variant="subtle"
             theme="amber"
             iconLeft="clock"
-            :label="__('{0} Pending Approvals', [business.pendingChangeRequests.length])"
+            :label="isMobileView ? `${business.pendingChangeRequests.length}` : __('{0} Pending Approvals', [business.pendingChangeRequests.length])"
             @click="activeTab = 'pending'"
           />
           <Button
             variant="solid"
+            :label="isMobileView ? '' : __('Add Client')"
             iconLeft="plus"
-            :label="__('Add Client')"
             @click="openAddClientModal"
           />
         </div>
       </template>
     </LayoutHeader>
 
-    <!-- Main Content Container with Tabs -->
-    <div class="flex flex-col flex-1 overflow-hidden p-6 space-y-5">
-      <!-- Tabs Bar -->
-      <div class="flex items-center justify-between border-b border-outline-gray-1 pb-3">
-        <div class="flex items-center gap-2">
+    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+      <!-- Filters & Status Tabs -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Status Tabs -->
+        <div class="flex flex-wrap gap-1 bg-surface-gray-2 p-1 rounded-lg text-xs font-medium">
           <button
             type="button"
-            class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2"
-            :class="activeTab === 'all' ? 'bg-surface-base text-ink-gray-9 shadow-sm border border-outline-gray-1 font-bold' : 'text-ink-gray-5 hover:text-ink-gray-9 hover:bg-surface-base/50'"
+            class="px-3 py-1.5 rounded-md transition-colors"
+            :class="activeTab === 'all' ? 'bg-surface-base text-ink-gray-9 font-bold shadow-sm' : 'text-ink-gray-6 hover:text-ink-gray-9'"
             @click="activeTab = 'all'"
           >
-            <span class="lucide-building-2 size-3.5" />
-            <span>{{ __('All Clients') }}</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-gray-3 text-ink-gray-7">
-              {{ filteredClients.length }}
-            </span>
+            {{ __('All Clients') }}
           </button>
-
           <button
             type="button"
-            class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2"
-            :class="activeTab === 'pending' ? 'bg-surface-base text-ink-gray-9 shadow-sm border border-outline-gray-1 font-bold' : 'text-ink-gray-5 hover:text-ink-gray-9 hover:bg-surface-base/50'"
+            class="px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5"
+            :class="activeTab === 'pending' ? 'bg-surface-base text-ink-gray-9 font-bold shadow-sm' : 'text-ink-gray-6 hover:text-ink-gray-9'"
             @click="activeTab = 'pending'"
           >
-            <span class="lucide-clock size-3.5 text-amber-500" />
             <span>{{ __('Pending Approvals') }}</span>
             <span
               v-if="business.pendingChangeRequests.length"
@@ -82,167 +57,258 @@
               {{ business.pendingChangeRequests.length }}
             </span>
           </button>
-
           <button
             type="button"
-            class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2"
-            :class="activeTab === 'history' ? 'bg-surface-base text-ink-gray-9 shadow-sm border border-outline-gray-1 font-bold' : 'text-ink-gray-5 hover:text-ink-gray-9 hover:bg-surface-base/50'"
+            class="px-3 py-1.5 rounded-md transition-colors"
+            :class="activeTab === 'history' ? 'bg-surface-base text-ink-gray-9 font-bold shadow-sm' : 'text-ink-gray-6 hover:text-ink-gray-9'"
             @click="activeTab = 'history'"
           >
-            <span class="lucide-history size-3.5" />
-            <span>{{ __('Change Request History') }}</span>
+            {{ __('Change Request History') }}
           </button>
         </div>
 
-        <!-- Search Bar (Active in All Clients) -->
-        <div v-if="activeTab === 'all'" class="relative w-64">
-          <span class="lucide-search absolute left-3 top-2.5 size-4 text-ink-gray-4" />
-          <input
+        <!-- Search Bar -->
+        <div class="w-full sm:w-64">
+          <TextInput
             v-model="searchQuery"
-            type="text"
-            :placeholder="__('Search organization or contact...')"
-            class="w-full pl-9 pr-3 py-1.5 text-xs bg-surface-base border border-outline-gray-1 rounded-lg text-ink-gray-9 placeholder-ink-gray-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            type="search"
+            :placeholder="__('Search clients or contacts...')"
+            iconLeft="search"
           />
         </div>
       </div>
 
-      <!-- TAB 1: ALL CLIENTS DIRECTORY -->
-      <div v-if="activeTab === 'all'" class="flex-1 overflow-y-auto space-y-4">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- TAB 1: ALL CLIENTS DATA TABLE & ADAPTIVE CARDS -->
+      <div v-if="activeTab === 'all'" class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
+        <!-- Desktop Table (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-surface-gray-1 border-b border-outline-gray-1 text-xs font-semibold text-ink-gray-6 uppercase tracking-wider">
+                <th class="py-3 px-6">{{ __('Organization / Entity') }}</th>
+                <th class="py-3 px-6">{{ __('Primary Contact') }}</th>
+                <th class="py-3 px-6">{{ __('CRN / Tax ID') }}</th>
+                <th class="py-3 px-6">{{ __('Location') }}</th>
+                <th class="py-3 px-6">{{ __('Payment Terms') }}</th>
+                <th class="py-3 px-6">{{ __('Status') }}</th>
+                <th class="py-3 px-6 text-right">{{ __('Actions') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-gray-1">
+              <tr
+                v-for="c in filteredClients"
+                :key="c.id"
+                class="hover:bg-surface-gray-1 transition-colors cursor-pointer"
+                @click="router.push(`/clients/${c.id}`)"
+              >
+                <!-- Organization with Avatar & Subtitle -->
+                <td class="py-4 px-6">
+                  <div class="flex items-center gap-3">
+                    <div class="size-9 rounded-lg bg-surface-blue-2 border border-outline-blue-2 flex items-center justify-center font-bold text-ink-blue-7 text-xs shrink-0">
+                      {{ (c.company_name || 'C').substring(0, 2).toUpperCase() }}
+                    </div>
+                    <div>
+                      <div class="font-semibold text-ink-gray-9 text-sm hover:text-ink-blue-7">
+                        {{ c.company_name }}
+                      </div>
+                      <div class="text-xs text-ink-gray-5">
+                        {{ c.legal_structure }}<span v-if="c.industry"> • {{ c.industry }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Primary Contact -->
+                <td class="py-4 px-6">
+                  <div class="font-medium text-ink-gray-9 text-sm">
+                    {{ c.first_name ? `${c.first_name} ${c.last_name || ''}`.trim() : (c.contact_name || c.company_name) }}
+                  </div>
+                  <div class="text-xs text-ink-gray-5">
+                    {{ c.primary_email || c.billing_email || '—' }}
+                  </div>
+                  <div v-if="c.phone" class="text-[11px] text-ink-gray-4">
+                    {{ c.phone }}
+                  </div>
+                </td>
+
+                <!-- Registry Details -->
+                <td class="py-4 px-6 text-xs text-ink-gray-7 font-mono">
+                  <div v-if="c.company_registration_number">
+                    <span class="text-ink-gray-4 text-[10px] uppercase font-sans">CRN:</span> {{ c.company_registration_number }}
+                  </div>
+                  <div v-if="c.tin || c.tax_id">
+                    <span class="text-ink-gray-4 text-[10px] uppercase font-sans">TIN:</span> {{ c.tin || c.tax_id }}
+                  </div>
+                  <div v-if="!c.company_registration_number && !c.tin && !c.tax_id" class="text-ink-gray-4 font-sans">
+                    —
+                  </div>
+                </td>
+
+                <!-- Location -->
+                <td class="py-4 px-6 text-xs text-ink-gray-7">
+                  <div>{{ c.billing_city || '—' }}</div>
+                  <div class="text-[11px] text-ink-gray-4">{{ c.billing_country || '' }}</div>
+                </td>
+
+                <!-- Terms -->
+                <td class="py-4 px-6 text-xs text-ink-gray-7">
+                  <div class="font-medium">{{ c.default_currency || 'USD' }} • {{ c.default_payment_terms || 'Net 30' }}</div>
+                  <div v-if="c.credit_limit" class="text-[11px] text-ink-gray-4">
+                    Limit: ${{ Number(c.credit_limit).toLocaleString() }}
+                  </div>
+                </td>
+
+                <!-- Status -->
+                <td class="py-4 px-6">
+                  <span
+                    class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                    :class="c.status === 'Active' ? 'bg-surface-green-2 text-ink-green-7' : 'bg-surface-gray-2 text-ink-gray-6'"
+                  >
+                    {{ __(c.status || 'Active') }}
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td class="py-4 px-6 text-right" @click.stop>
+                  <div class="flex items-center justify-end gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      iconLeft="file-edit"
+                      :tooltip="__('Edit Client')"
+                      @click="openEditClientModal(c)"
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      theme="amber"
+                      iconLeft="user-plus"
+                      :tooltip="__('Upgrade to Staff')"
+                      @click="promptUpgradeClient(c)"
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      iconLeft="chevron-right"
+                      @click="router.push(`/clients/${c.id}`)"
+                    />
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Clean Empty Row -->
+              <tr v-if="!filteredClients.length">
+                <td colspan="7" class="py-12 text-center text-ink-gray-5">
+                  <div class="space-y-2">
+                    <span class="lucide-building-2 size-8 text-ink-gray-4 mx-auto block" />
+                    <h4 class="text-sm font-bold text-ink-gray-9">{{ __('No Clients Found') }}</h4>
+                    <p class="text-xs text-ink-gray-5">{{ __('Try adjusting your search query or click "Add Client" to register a new organization.') }}</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Adaptive Cards View (< 768px) -->
+        <div class="md:hidden divide-y divide-outline-gray-1">
           <div
             v-for="c in filteredClients"
             :key="c.id"
-            class="bg-surface-base border border-outline-gray-1 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4"
+            class="p-4 hover:bg-surface-gray-1 transition-colors cursor-pointer space-y-3"
+            @click="router.push(`/clients/${c.id}`)"
           >
-            <!-- Card Header: Organization Details -->
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex items-start gap-3">
-                <div class="size-11 rounded-xl bg-surface-blue-2 border border-outline-blue-2 flex items-center justify-center font-bold text-ink-blue-7 text-sm shrink-0">
+            <!-- Top Row: Avatar, Title, Status & Chevron -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="size-10 rounded-lg bg-surface-blue-2 border border-outline-blue-2 flex items-center justify-center font-bold text-ink-blue-7 text-xs shrink-0">
                   {{ (c.company_name || 'C').substring(0, 2).toUpperCase() }}
                 </div>
-                <div>
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <h3 class="text-sm font-bold text-ink-gray-9">
-                      {{ c.company_name }}
-                    </h3>
-                    <span
-                      class="px-2 py-0.5 rounded text-[10px] font-bold"
-                      :class="c.status === 'Active' ? 'bg-surface-green-2 text-ink-green-7 border border-outline-green-2' : 'bg-surface-gray-2 text-ink-gray-6 border border-outline-gray-2'"
-                    >
-                      {{ __(c.status || 'Active') }}
-                    </span>
-                    <span v-if="c.legal_structure" class="text-[10px] text-ink-gray-5 bg-surface-gray-2 px-1.5 py-0.5 rounded">
-                      {{ c.legal_structure }}
-                    </span>
+                <div class="min-w-0">
+                  <div class="font-bold text-ink-gray-9 text-sm truncate hover:text-ink-blue-7">
+                    {{ c.company_name }}
                   </div>
-
-                  <p v-if="c.industry" class="text-xs text-ink-gray-5 mt-0.5">
-                    {{ c.industry }}
-                  </p>
-
-                  <div class="flex items-center gap-3 mt-1.5 text-xs text-ink-gray-6 flex-wrap">
-                    <span v-if="c.company_registration_number" class="font-mono text-[11px] bg-surface-gray-1 px-1.5 py-0.5 rounded border border-outline-gray-1">
-                      CRN: {{ c.company_registration_number }}
-                    </span>
-                    <span v-if="c.tin" class="font-mono text-[11px] bg-surface-gray-1 px-1.5 py-0.5 rounded border border-outline-gray-1">
-                      TIN: {{ c.tin }}
-                    </span>
-                    <span v-if="c.billing_city" class="flex items-center gap-1 text-ink-gray-5">
-                      <span class="lucide-map-pin size-3" />
-                      {{ c.billing_city }}, {{ c.billing_country || 'US' }}
-                    </span>
+                  <div class="text-xs text-ink-gray-5 truncate">
+                    {{ c.legal_structure }}<span v-if="c.industry"> • {{ c.industry }}</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Action Menu -->
-              <div class="flex items-center gap-1">
-                <Button
-                  size="sm"
-                  variant="subtle"
-                  iconLeft="file-edit"
-                  :label="__('Edit')"
-                  @click="openEditClientModal(c)"
-                />
-                <Button
-                  size="sm"
-                  variant="subtle"
-                  iconLeft="user-plus"
-                  :label="__('Upgrade to Staff')"
-                  @click="promptUpgradeClient(c)"
-                />
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span
+                  class="px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                  :class="c.status === 'Active' ? 'bg-surface-green-2 text-ink-green-7' : 'bg-surface-gray-2 text-ink-gray-6'"
+                >
+                  {{ __(c.status || 'Active') }}
+                </span>
+                <span class="lucide-chevron-right size-4 text-ink-gray-4" />
               </div>
             </div>
 
-            <!-- Card Body: Associated Contact People -->
-            <div class="bg-surface-gray-1 rounded-xl p-3 border border-outline-gray-1 space-y-2">
-              <span class="text-[10px] font-bold uppercase tracking-wider text-ink-gray-5 flex items-center gap-1.5">
-                <span class="lucide-users size-3" />
-                {{ __('Primary Contact Person & Representatives') }}
-              </span>
-
-              <div class="space-y-1.5">
-                <!-- Primary Contact -->
-                <div class="flex items-center justify-between text-xs">
-                  <div class="flex items-center gap-2">
-                    <span class="lucide-user-check size-3.5 text-ink-blue-6 shrink-0" />
-                    <span class="font-bold text-ink-gray-9">
-                      {{ c.first_name ? `${c.first_name} ${c.last_name || ''}` : (c.contact_name || c.primary_email) }}
-                    </span>
-                    <span v-if="c.job_title" class="text-[11px] text-ink-gray-5">({{ c.job_title }})</span>
-                  </div>
-                  <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-surface-blue-2 text-ink-blue-7">
-                    {{ __('Primary') }}
-                  </span>
+            <!-- Primary Contact & Details Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-surface-gray-1/60 p-2.5 rounded-lg">
+              <div>
+                <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Contact') }}</span>
+                <span class="font-medium text-ink-gray-9">
+                  {{ c.first_name ? `${c.first_name} ${c.last_name || ''}`.trim() : (c.contact_name || '—') }}
+                </span>
+                <div class="text-ink-gray-5 truncate">
+                  <a v-if="c.primary_email || c.billing_email" :href="`mailto:${c.primary_email || c.billing_email}`" class="text-ink-blue-6 hover:underline" @click.stop>
+                    {{ c.primary_email || c.billing_email }}
+                  </a>
+                  <span v-else>—</span>
                 </div>
-
-                <div class="grid grid-cols-2 gap-2 text-[11px] text-ink-gray-6 pl-5.5">
-                  <span class="truncate flex items-center gap-1">
-                    <span class="lucide-mail size-3 text-ink-gray-4" />
-                    {{ c.billing_email || c.primary_email }}
-                  </span>
-                  <span class="truncate flex items-center gap-1">
-                    <span class="lucide-phone size-3 text-ink-gray-4" />
-                    {{ c.phone || c.mobile_no || 'No phone' }}
-                  </span>
+                <div v-if="c.phone" class="text-ink-gray-6 mt-0.5">
+                  <a :href="`tel:${c.phone}`" class="hover:underline" @click.stop>{{ c.phone }}</a>
                 </div>
+              </div>
 
-                <!-- Secondary Contacts (if any) -->
-                <div v-if="c.contacts && c.contacts.length > 1" class="pt-1 border-t border-outline-gray-1">
-                  <div
-                    v-for="cnt in c.contacts.filter(item => !item.is_primary)"
-                    :key="cnt.id"
-                    class="flex items-center justify-between text-[11px] text-ink-gray-7 py-0.5"
-                  >
-                    <span class="flex items-center gap-1.5">
-                      <span class="lucide-user size-3 text-ink-gray-4" />
-                      {{ cnt.name }} <span class="text-ink-gray-4">({{ cnt.role }})</span>
-                    </span>
-                    <span class="text-ink-gray-5">{{ cnt.email }}</span>
-                  </div>
+              <div>
+                <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Billing & Terms') }}</span>
+                <div class="text-ink-gray-8">
+                  {{ c.billing_city || '—' }}<span v-if="c.billing_country">, {{ c.billing_country }}</span>
+                </div>
+                <div class="text-ink-gray-6 mt-0.5">
+                  {{ c.default_currency || 'USD' }} • {{ c.default_payment_terms || 'Net 30' }}
+                </div>
+                <div v-if="c.credit_limit" class="text-ink-gray-5 text-[11px]">
+                  Limit: ${{ Number(c.credit_limit).toLocaleString() }}
                 </div>
               </div>
             </div>
 
-            <!-- Card Footer: Commercial & Invoice Stats -->
-            <div class="flex items-center justify-between pt-2 border-t border-outline-gray-1 text-xs">
-              <div class="flex items-center gap-3 text-ink-gray-5">
-                <span>Terms: <strong class="text-ink-gray-9">{{ c.default_payment_terms || 'Net 30' }}</strong></span>
-                <span>Currency: <strong class="text-ink-gray-9">{{ c.default_currency || 'USD' }}</strong></span>
-                <span v-if="c.credit_limit">Limit: <strong class="text-ink-gray-9">${{ Number(c.credit_limit).toLocaleString() }}</strong></span>
-              </div>
-
-              <router-link :to="`/invoices/new?customer=${encodeURIComponent(c.company_name)}&email=${encodeURIComponent(c.primary_email)}`">
-                <Button size="sm" variant="subtle" iconLeft="plus" :label="__('Issue Invoice')" />
-              </router-link>
+            <!-- Mobile Quick Actions -->
+            <div class="flex items-center justify-end gap-2 pt-1 border-t border-outline-gray-1/40" @click.stop>
+              <Button
+                size="sm"
+                variant="outline"
+                iconLeft="file-edit"
+                :label="__('Edit')"
+                @click="openEditClientModal(c)"
+              />
+              <Button
+                size="sm"
+                variant="subtle"
+                theme="amber"
+                iconLeft="user-plus"
+                :label="__('Upgrade')"
+                @click="promptUpgradeClient(c)"
+              />
+              <Button
+                size="sm"
+                variant="solid"
+                :label="__('View')"
+                iconRight="arrow-right"
+                @click="router.push(`/clients/${c.id}`)"
+              />
             </div>
           </div>
-        </div>
 
-        <div v-if="!filteredClients.length" class="bg-surface-base border border-outline-gray-1 rounded-xl p-12 text-center text-ink-gray-5 space-y-2">
-          <span class="lucide-building size-8 text-ink-gray-4 mx-auto" />
-          <h4 class="text-sm font-bold text-ink-gray-9">{{ __('No Clients Found') }}</h4>
-          <p class="text-xs text-ink-gray-5">{{ __('Try adjusting your search query or click "Add Client" to create a new client organization.') }}</p>
+          <div v-if="!filteredClients.length" class="py-12 text-center text-ink-gray-4">
+            <span class="lucide-building-2 size-8 text-ink-gray-4 mx-auto block mb-2" />
+            <p class="text-base font-semibold text-ink-gray-7">{{ __('No clients found') }}</p>
+            <p class="text-xs mt-1">{{ __('Try adjusting your search criteria or add a client above.') }}</p>
+          </div>
         </div>
       </div>
 
@@ -361,60 +427,62 @@
       <!-- TAB 3: CHANGE REQUEST HISTORY -->
       <div v-if="activeTab === 'history'" class="flex-1 overflow-y-auto">
         <div class="bg-surface-base border border-outline-gray-1 rounded-xl overflow-hidden shadow-sm">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-surface-gray-2 text-ink-gray-6 uppercase tracking-wider font-semibold border-b border-outline-gray-1">
-              <tr>
-                <th class="py-3 px-4">{{ __('Date') }}</th>
-                <th class="py-3 px-4">{{ __('Client Organization') }}</th>
-                <th class="py-3 px-4">{{ __('Requested Updates') }}</th>
-                <th class="py-3 px-4">{{ __('Status') }}</th>
-                <th class="py-3 px-4">{{ __('Reviewer & Notes') }}</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-gray-1">
-              <tr v-for="req in business.changeRequests" :key="req.id" class="hover:bg-surface-gray-1">
-                <td class="py-3 px-4 text-ink-gray-5 whitespace-nowrap">{{ req.requested_date }}</td>
-                <td class="py-3 px-4">
-                  <span class="font-bold text-ink-gray-9 block">{{ req.organization }}</span>
-                  <span class="text-ink-gray-5">{{ req.client_name }}</span>
-                </td>
-                <td class="py-3 px-4">
-                  <div class="space-y-0.5">
-                    <span v-if="req.requested_details.company !== req.current_details.company" class="block">
-                      Company: <strong>{{ req.requested_details.company }}</strong>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-surface-gray-2 text-ink-gray-6 uppercase tracking-wider font-semibold border-b border-outline-gray-1">
+                <tr>
+                  <th class="py-3 px-4">{{ __('Date') }}</th>
+                  <th class="py-3 px-4">{{ __('Client Organization') }}</th>
+                  <th class="py-3 px-4">{{ __('Requested Updates') }}</th>
+                  <th class="py-3 px-4">{{ __('Status') }}</th>
+                  <th class="py-3 px-4">{{ __('Reviewer & Notes') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-gray-1">
+                <tr v-for="req in business.changeRequests" :key="req.id" class="hover:bg-surface-gray-1">
+                  <td class="py-3 px-4 text-ink-gray-5 whitespace-nowrap">{{ req.requested_date }}</td>
+                  <td class="py-3 px-4">
+                    <span class="font-bold text-ink-gray-9 block">{{ req.organization }}</span>
+                    <span class="text-ink-gray-5">{{ req.client_name }}</span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="space-y-0.5">
+                      <span v-if="req.requested_details.company !== req.current_details.company" class="block">
+                        Company: <strong>{{ req.requested_details.company }}</strong>
+                      </span>
+                      <span v-if="req.requested_details.company_registration_number !== req.current_details.company_registration_number" class="block">
+                        CRN: <strong>{{ req.requested_details.company_registration_number }}</strong>
+                      </span>
+                      <span v-if="req.requested_details.tax_id !== req.current_details.tax_id" class="block">
+                        TIN: <strong>{{ req.requested_details.tax_id }}</strong>
+                      </span>
+                      <span v-if="req.requested_details.address !== req.current_details.address" class="block">
+                        Address: <strong>{{ req.requested_details.address }}</strong>
+                      </span>
+                    </div>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span
+                      class="px-2 py-0.5 rounded text-[10px] font-bold"
+                      :class="{
+                        'bg-surface-amber-2 text-ink-amber-7 border border-outline-amber-2': req.status === 'Pending',
+                        'bg-surface-green-2 text-ink-green-7 border border-outline-green-2': req.status === 'Approved',
+                        'bg-surface-red-2 text-ink-red-7 border border-outline-red-2': req.status === 'Rejected',
+                      }"
+                    >
+                      {{ __(req.status) }}
                     </span>
-                    <span v-if="req.requested_details.company_registration_number !== req.current_details.company_registration_number" class="block">
-                      CRN: <strong>{{ req.requested_details.company_registration_number }}</strong>
+                  </td>
+                  <td class="py-3 px-4 text-ink-gray-6">
+                    <span v-if="req.reviewed_by" class="block font-semibold text-ink-gray-9">
+                      {{ req.reviewed_by }} ({{ req.reviewed_date }})
                     </span>
-                    <span v-if="req.requested_details.tax_id !== req.current_details.tax_id" class="block">
-                      TIN: <strong>{{ req.requested_details.tax_id }}</strong>
-                    </span>
-                    <span v-if="req.requested_details.address !== req.current_details.address" class="block">
-                      Address: <strong>{{ req.requested_details.address }}</strong>
-                    </span>
-                  </div>
-                </td>
-                <td class="py-3 px-4 whitespace-nowrap">
-                  <span
-                    class="px-2 py-0.5 rounded text-[10px] font-bold"
-                    :class="{
-                      'bg-surface-amber-2 text-ink-amber-7 border border-outline-amber-2': req.status === 'Pending',
-                      'bg-surface-green-2 text-ink-green-7 border border-outline-green-2': req.status === 'Approved',
-                      'bg-surface-red-2 text-ink-red-7 border border-outline-red-2': req.status === 'Rejected',
-                    }"
-                  >
-                    {{ __(req.status) }}
-                  </span>
-                </td>
-                <td class="py-3 px-4 text-ink-gray-6">
-                  <span v-if="req.reviewed_by" class="block font-semibold text-ink-gray-9">
-                    {{ req.reviewed_by }} ({{ req.reviewed_date }})
-                  </span>
-                  <span>{{ req.review_notes || '—' }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    <span>{{ req.review_notes || '—' }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -710,10 +778,13 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Button, Dialog, FormControl } from 'frappe-ui'
+import { useRouter } from 'vue-router'
+import { Button, TextInput, Dialog, FormControl } from 'frappe-ui'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import { isMobileView } from '@/composables/settings'
 import { useBusinessStore } from '@/stores/business'
 
+const router = useRouter()
 const business = useBusinessStore()
 
 onMounted(async () => {
@@ -723,7 +794,7 @@ onMounted(async () => {
   ])
 })
 
-async function refreshSupabaseData() {
+async function refreshData() {
   await Promise.all([
     business.fetchClientsFromSupabase(),
     business.fetchChangeRequestsFromSupabase(),

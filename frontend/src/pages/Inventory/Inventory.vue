@@ -10,7 +10,7 @@
         </div>
       </template>
       <template #right-header>
-        <Button variant="solid" :label="__('Add Product / Service')" iconLeft="plus" @click="openAddModal" />
+        <Button variant="solid" :label="isMobileView ? '' : __('Add Product / Service')" iconLeft="plus" @click="openAddModal" />
       </template>
     </LayoutHeader>
 
@@ -60,9 +60,10 @@
         </div>
       </div>
 
-      <!-- Inventory Table -->
+      <!-- Inventory Table & Mobile Adaptive Cards -->
       <div class="bg-surface-base rounded-xl border border-outline-gray-1 overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
+        <!-- Desktop Table (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="bg-surface-gray-1 border-b border-outline-gray-1 text-xs font-semibold text-ink-gray-6 uppercase tracking-wider">
@@ -131,6 +132,72 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Adaptive Cards View (< 768px) -->
+        <div class="md:hidden divide-y divide-outline-gray-1">
+          <div
+            v-for="item in filteredInventory"
+            :key="item.id"
+            class="p-4 hover:bg-surface-gray-1 transition-colors space-y-3"
+          >
+            <!-- Top: Code/SKU + Type Badge -->
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono font-bold text-ink-gray-9 text-xs">{{ item.code }}</span>
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium"
+                :class="item.type === 'Product' ? 'bg-surface-blue-2 text-ink-blue-7' : 'bg-surface-purple-2 text-ink-purple-7'"
+              >
+                {{ item.type }}
+              </span>
+            </div>
+
+            <!-- Name, Category & Description -->
+            <div>
+              <div class="font-semibold text-ink-gray-9 text-sm">{{ item.name }}</div>
+              <div class="text-xs text-ink-gray-5">{{ item.category }}</div>
+              <div v-if="item.description" class="text-xs text-ink-gray-4 line-clamp-2 mt-1">
+                {{ item.description }}
+              </div>
+            </div>
+
+            <!-- Pricing & Stock Details Grid -->
+            <div class="grid grid-cols-2 gap-2 text-xs bg-surface-gray-1/60 p-2.5 rounded-lg items-center">
+              <div>
+                <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Unit Price') }}</span>
+                <span class="font-bold text-sm text-ink-gray-9">${{ formatNum(item.unit_price) }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase font-semibold text-ink-gray-5 block">{{ __('Stock Level') }}</span>
+                <span v-if="!item.track_stock" class="text-ink-gray-5 text-xs">
+                  {{ __('Service') }}
+                </span>
+                <div v-else class="flex items-center justify-end gap-1.5 mt-0.5">
+                  <span class="font-bold text-sm" :class="item.quantity_in_stock <= item.low_stock_threshold ? 'text-ink-red-3' : 'text-ink-gray-9'">
+                    {{ item.quantity_in_stock }} units
+                  </span>
+                  <span
+                    v-if="item.quantity_in_stock <= item.low_stock_threshold"
+                    class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-surface-red-2 text-ink-red-7 border border-outline-red-2"
+                  >
+                    {{ __('Low') }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex items-center justify-end gap-2 pt-1 border-t border-outline-gray-1/40">
+              <Button size="sm" variant="outline" iconLeft="edit-2" :label="__('Edit')" @click="openEditModal(item)" />
+              <Button size="sm" variant="subtle" theme="red" iconLeft="trash-2" :label="__('Delete')" @click="deleteItem(item.id)" />
+            </div>
+          </div>
+
+          <div v-if="!filteredInventory.length" class="py-12 text-center text-ink-gray-4">
+            <span class="lucide-package size-8 text-ink-gray-4 mx-auto block mb-2" />
+            <p class="text-base font-semibold text-ink-gray-7">{{ __('No inventory items found') }}</p>
+            <p class="text-xs mt-1">{{ __('Add your first product or service above.') }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -241,6 +308,7 @@
 import { ref, reactive, computed } from 'vue'
 import { useBusinessStore } from '@/stores/business'
 import LayoutHeader from '@/components/LayoutHeader.vue'
+import { isMobileView } from '@/composables/settings'
 import { Button, TextInput, Dialog, FormControl } from 'frappe-ui'
 
 const business = useBusinessStore()

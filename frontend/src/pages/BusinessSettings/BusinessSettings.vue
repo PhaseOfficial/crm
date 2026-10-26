@@ -171,7 +171,7 @@
           </div>
         </div>
 
-        <div class="border border-outline-gray-1 rounded-lg overflow-hidden">
+        <div class="border border-outline-gray-1 rounded-lg overflow-hidden overflow-x-auto">
           <table class="w-full text-left text-sm border-collapse">
             <thead class="bg-surface-gray-1 text-xs font-semibold text-ink-gray-6 uppercase tracking-wider">
               <tr>

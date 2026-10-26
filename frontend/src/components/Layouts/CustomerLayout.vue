@@ -32,6 +32,7 @@
                   ? 'bg-surface-gray-2 text-ink-gray-9 font-semibold'
                   : 'text-ink-gray-6 hover:text-ink-gray-9 hover:bg-surface-gray-1'
               "
+              @click="recordNavClick(item.key, 'client')"
             >
               {{ __(item.label) }}
             </router-link>
@@ -115,7 +116,7 @@
               ? 'bg-surface-gray-2 text-ink-gray-9 font-semibold'
               : 'text-ink-gray-6 hover:text-ink-gray-9 hover:bg-surface-gray-1'
           "
-          @click="mobileMenuOpen = false"
+          @click="() => { mobileMenuOpen = false; recordNavClick(item.key, 'client'); }"
         >
           {{ __(item.label) }}
         </router-link>
@@ -133,7 +134,7 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-6">
       <slot />
     </main>
 
@@ -147,8 +148,11 @@
       @open-profile-change="handleOpenProfileChange"
     />
 
+    <!-- Mobile Bottom Navigation Bar -->
+    <CustomerBottomNav />
+
     <!-- Footer -->
-    <footer class="bg-surface-base border-t border-outline-gray-1 py-4 text-center text-xs text-ink-gray-5">
+    <footer class="bg-surface-base border-t border-outline-gray-1 py-4 text-center text-xs text-ink-gray-5 pb-20 md:pb-4">
       <div class="max-w-7xl mx-auto px-4">
         © {{ new Date().getFullYear() }} {{ business.settings.business_name }}. {{ __('Customer Workspace') }}
       </div>
@@ -164,6 +168,8 @@ import { sessionStore } from '@/stores/session'
 import { Dropdown, Avatar, useTheme } from 'frappe-ui'
 import ProfileCompletionModal from '@/components/Modals/ProfileCompletionModal.vue'
 import CustomerGuideModal from '@/components/Modals/CustomerGuideModal.vue'
+import CustomerBottomNav from '@/components/Layouts/CustomerBottomNav.vue'
+import { recordNavClick } from '@/composables/navFrequency'
 
 const router = useRouter()
 const business = useBusinessStore()
@@ -182,11 +188,11 @@ function toggleTheme() {
 }
 
 const navItems = [
-  { label: 'Dashboard', to: '/portal' },
-  { label: 'My Purchases & Invoices', to: '/portal/purchases' },
-  { label: 'My Calendar', to: '/portal/calendar' },
-  { label: 'Promotions', to: '/portal/promotions' },
-  { label: 'My Account', to: '/portal/account' },
+  { key: 'Dashboard', label: 'Dashboard', to: '/portal' },
+  { key: 'Purchases', label: 'My Purchases & Invoices', to: '/portal/purchases' },
+  { key: 'Calendar', label: 'My Calendar', to: '/portal/calendar' },
+  { key: 'Promotions', label: 'Promotions', to: '/portal/promotions' },
+  { key: 'Account', label: 'My Account', to: '/portal/account' },
 ]
 
 const userMenuOptions = computed(() => {
